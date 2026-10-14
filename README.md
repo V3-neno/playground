@@ -23,6 +23,7 @@ playground/
 | -------------- | ---- | ------------------------------ |
 | mass-scraper   | 8787 | API + built UI                 |
 | mass-scraper   | 5173 | Vite dev server (dev mode only)|
+| ui             | 5180 | Component workshop (Vite)      |
 
 ## Adding a project
 

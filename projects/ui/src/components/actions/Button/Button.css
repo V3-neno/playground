@@ -1,0 +1,53 @@
+.ui-button {
+  --_h: 38px;
+  --_px: 16px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: var(--_h);
+  padding: 0 var(--_px);
+  border: var(--ui-border-width) solid transparent;
+  border-radius: var(--ui-radius-md);
+  font: inherit;
+  font-weight: var(--ui-weight-strong);
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--ui-duration-fast) var(--ui-ease),
+    border-color var(--ui-duration-fast) var(--ui-ease),
+    box-shadow var(--ui-duration-fast) var(--ui-ease),
+    transform var(--ui-duration-fast) var(--ui-ease);
+}
+.ui-button:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ui-focus); }
+.ui-button:active:not(:disabled) { transform: translateY(1px); }
+.ui-button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.ui-button--sm { --_h: 30px; --_px: 12px; font-size: 0.875em; }
+.ui-button--lg { --_h: 46px; --_px: 22px; font-size: 1.0625em; }
+
+.ui-button--solid { background: var(--ui-accent); color: var(--ui-accent-text); box-shadow: var(--ui-shadow-sm); }
+.ui-button--solid:hover:not(:disabled) { background: var(--ui-accent-hover); }
+
+.ui-button--outline { background: transparent; color: var(--ui-text); border-color: var(--ui-border); }
+.ui-button--outline:hover:not(:disabled) { background: var(--ui-surface); }
+
+.ui-button--ghost { background: transparent; color: var(--ui-text); }
+.ui-button--ghost:hover:not(:disabled) { background: var(--ui-accent-soft); }
+
+.ui-button--danger { background: var(--ui-danger); color: #fff; }
+.ui-button--danger:hover:not(:disabled) { background: color-mix(in oklab, var(--ui-danger) 85%, black); }
+
+.ui-button.is-loading .ui-button__label { opacity: 0.6; }
+.ui-button__spinner {
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: ui-button-spin 0.7s linear infinite;
+}
+@keyframes ui-button-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .ui-button__spinner { animation-duration: 2s; } }

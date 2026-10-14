@@ -1,0 +1,46 @@
+/* Mono: sharp corners, hard borders, monospace type. A deliberately different second style. */
+[data-style='mono'] {
+  --ui-bg: #f4f1ea;
+  --ui-surface: #ebe7dc;
+  --ui-surface-2: #e0dbcd;
+  --ui-text: #111111;
+  --ui-text-muted: #5c5a54;
+  --ui-border: #111111;
+  --ui-accent: #111111;
+  --ui-accent-hover: #333333;
+  --ui-accent-text: #f4f1ea;
+  --ui-accent-soft: #e0dbcd;
+  --ui-radius-sm: 0;
+  --ui-radius-md: 0;
+  --ui-radius-lg: 0;
+  --ui-radius-full: 0;
+  --ui-border-width: 2px;
+  --ui-shadow-sm: 2px 2px 0 #111111;
+  --ui-shadow-md: 4px 4px 0 #111111;
+  --ui-shadow-lg: 6px 6px 0 #111111;
+  --ui-font: ui-monospace, 'Cascadia Code', Consolas, monospace;
+  --ui-font-size: 14px;
+  --ui-weight-strong: 700;
+  --ui-chart-1: #111111;
+  --ui-chart-2: #ff5a1f;
+  --ui-chart-3: #2563eb;
+  --ui-chart-4: #9a9486;
+  --ui-chart-5: #d4cfc2;
+  --ui-chart-6: #5c5a54;
+}
+[data-style='mono'][data-theme='dark'] {
+  --ui-bg: #0e0e0e;
+  --ui-surface: #181818;
+  --ui-surface-2: #222222;
+  --ui-text: #f4f1ea;
+  --ui-text-muted: #a19d93;
+  --ui-border: #f4f1ea;
+  --ui-accent: #f4f1ea;
+  --ui-accent-hover: #ffffff;
+  --ui-accent-text: #0e0e0e;
+  --ui-accent-soft: #222222;
+  --ui-shadow-sm: 2px 2px 0 #f4f1ea;
+  --ui-shadow-md: 4px 4px 0 #f4f1ea;
+  --ui-shadow-lg: 6px 6px 0 #f4f1ea;
+  --ui-chart-1: #f4f1ea;
+}
