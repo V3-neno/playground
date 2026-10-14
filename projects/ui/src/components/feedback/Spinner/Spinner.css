@@ -1,0 +1,158 @@
+.ui-spinner {
+  --_c: var(--ui-accent);
+  --_track: color-mix(in oklab, var(--_c) 18%, transparent);
+  display: inline-grid;
+  place-items: center;
+  width: var(--_s);
+  height: var(--_s);
+  flex: none;
+  vertical-align: middle;
+}
+.ui-spinner--current { --_c: currentColor; }
+.ui-spinner__visual { position: relative; display: block; width: 100%; height: 100%; }
+.ui-spinner__visual > i { display: block; font-style: normal; }
+
+/* Ring */
+.ui-spinner--ring .ui-spinner__visual {
+  border: max(2px, calc(var(--_s) / 9)) solid var(--_track);
+  border-top-color: var(--_c);
+  border-radius: 50%;
+  animation: ui-spin 0.75s linear infinite;
+}
+
+/* Dots: three bouncing dots */
+.ui-spinner--dots .ui-spinner__visual { display: flex; align-items: center; justify-content: space-between; }
+.ui-spinner--dots i {
+  width: 26%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--_c);
+  animation: ui-spinner-bounce 1s var(--ui-ease) infinite;
+  animation-delay: calc(var(--i) * 0.15s);
+}
+
+/* Bars: an equaliser */
+.ui-spinner--bars .ui-spinner__visual { display: flex; align-items: center; justify-content: space-between; }
+.ui-spinner--bars i {
+  width: 14%;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--_c);
+  animation: ui-spinner-bars 1s ease-in-out infinite;
+  animation-delay: calc(var(--i) * -0.12s - 0.6s);
+}
+
+/* Pulse: expanding rings */
+.ui-spinner--pulse .ui-spinner__visual::before,
+.ui-spinner--pulse .ui-spinner__visual::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--_c);
+  animation: ui-spinner-pulse 1.4s var(--ui-ease) infinite;
+}
+.ui-spinner--pulse .ui-spinner__visual::after { animation-delay: 0.7s; }
+
+/* Orbit: dots circling at different speeds */
+.ui-spinner--orbit .ui-spinner__visual { border-radius: 50%; border: 1px solid var(--_track); }
+.ui-spinner--orbit i {
+  position: absolute;
+  inset: 0;
+  animation: ui-spin calc(0.9s + var(--i) * 0.45s) linear infinite;
+}
+.ui-spinner--orbit i::before {
+  content: '';
+  position: absolute;
+  top: calc(-1 * var(--_s) / 14);
+  left: 50%;
+  width: calc(var(--_s) / 5 - var(--i) * var(--_s) / 30);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--_c);
+  transform: translateX(-50%);
+  opacity: calc(1 - var(--i) * 0.25);
+}
+
+@keyframes ui-spin { to { transform: rotate(360deg); } }
+@keyframes ui-spinner-bounce { 0%, 80%, 100% { transform: scale(0.5); opacity: 0.5; } 40% { transform: scale(1); opacity: 1; } }
+@keyframes ui-spinner-bars { 0%, 100% { transform: scaleY(0.35); } 50% { transform: scaleY(1); } }
+@keyframes ui-spinner-pulse { from { transform: scale(0); opacity: 0.8; } to { transform: scale(1); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-spinner__visual, .ui-spinner__visual > i, .ui-spinner__visual::before, .ui-spinner__visual::after { animation-duration: 3s !important; }
+}
+
+/* ---- Style overrides ---- */
+
+[data-style='corporate'] .ui-spinner--ring .ui-spinner__visual { border-width: max(2px, calc(var(--_s) / 12)); animation-duration: 0.9s; }
+
+[data-style='glass'] .ui-spinner--ring .ui-spinner__visual {
+  border: 0;
+  background: conic-gradient(from 0deg, transparent 10%, var(--_c));
+  mask: radial-gradient(farthest-side, transparent calc(100% - max(3px, var(--_s) / 8)), #000 calc(100% - max(3px, var(--_s) / 8) + 1px));
+  filter: drop-shadow(0 0 4px var(--_c));
+}
+
+/* Soft: the ring runs in a groove pressed into the surface */
+[data-style='soft'] .ui-spinner--ring { border-radius: 50%; box-shadow: var(--ui-shadow-inset); padding: max(2px, calc(var(--_s) / 10)); }
+[data-style='soft'] .ui-spinner--ring .ui-spinner__visual { border-color: transparent; border-top-color: var(--_c); }
+[data-style='soft'] .ui-spinner--dots i,
+[data-style='soft'] .ui-spinner--bars i { box-shadow: 1px 1px 3px rgb(0 0 0 / 0.2); }
+
+/* Brutalist / mono: square, stepped, no smoothing */
+:is([data-style='brutalist'], [data-style='mono']) .ui-spinner--ring .ui-spinner__visual {
+  border-radius: 0;
+  border-color: var(--ui-border);
+  border-top-color: var(--ui-accent);
+  animation-timing-function: steps(8);
+}
+[data-style='brutalist'] .ui-spinner--ring .ui-spinner__visual { border-top-color: var(--ui-accent); outline: 2px solid var(--ui-border); outline-offset: -1px; }
+[data-style='mono'] .ui-spinner--ring .ui-spinner__visual { border-color: var(--_track); border-top-color: var(--ui-text); }
+:is([data-style='brutalist'], [data-style='mono']) .ui-spinner--dots i { border-radius: 0; animation-timing-function: steps(3); }
+:is([data-style='brutalist'], [data-style='mono']) .ui-spinner--bars i { border-radius: 0; animation-timing-function: steps(4); }
+:is([data-style='brutalist'], [data-style='mono']) :is(.ui-spinner--pulse, .ui-spinner--orbit) .ui-spinner__visual,
+:is([data-style='brutalist'], [data-style='mono']) .ui-spinner--pulse .ui-spinner__visual::before,
+:is([data-style='brutalist'], [data-style='mono']) .ui-spinner--pulse .ui-spinner__visual::after,
+:is([data-style='brutalist'], [data-style='mono']) .ui-spinner--orbit i::before { border-radius: 0; }
+[data-style='brutalist'] .ui-spinner--dots i,
+[data-style='brutalist'] .ui-spinner--bars i { outline: 2px solid var(--ui-border); outline-offset: -2px; }
+[data-style='mono'] .ui-spinner { --_c: var(--ui-text); }
+
+/* Playful: a multi-coloured candy set */
+[data-style='playful'] .ui-spinner--dots i:nth-child(1), [data-style='playful'] .ui-spinner--bars i:nth-child(5n + 1) { background: var(--ui-chart-1); }
+[data-style='playful'] .ui-spinner--dots i:nth-child(2), [data-style='playful'] .ui-spinner--bars i:nth-child(5n + 2) { background: var(--ui-chart-2); }
+[data-style='playful'] .ui-spinner--dots i:nth-child(3), [data-style='playful'] .ui-spinner--bars i:nth-child(5n + 3) { background: var(--ui-chart-3); }
+[data-style='playful'] .ui-spinner--bars i:nth-child(5n + 4) { background: var(--ui-chart-4); }
+[data-style='playful'] .ui-spinner--bars i:nth-child(5n + 5) { background: var(--ui-chart-5); }
+[data-style='playful'] .ui-spinner--dots i { animation-name: ui-spinner-hop; animation-timing-function: var(--ui-ease-spring); border: 2px solid var(--ui-border); }
+[data-style='playful'] .ui-spinner--ring .ui-spinner__visual { border-color: var(--ui-chart-2) var(--ui-chart-4) var(--ui-chart-3) var(--ui-chart-1); animation-timing-function: var(--ui-ease-spring); animation-duration: 1.1s; }
+[data-style='playful'] .ui-spinner--orbit i:nth-child(2)::before { background: var(--ui-chart-2); }
+[data-style='playful'] .ui-spinner--orbit i:nth-child(3)::before { background: var(--ui-chart-4); }
+@keyframes ui-spinner-hop { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-70%); } }
+
+/* Extra: rainbow conic ring with a neon halo, hue-cycling dots, and a little galaxy for orbit */
+[data-style='extra'] .ui-spinner--ring .ui-spinner__visual {
+  border: 0;
+  background: conic-gradient(from var(--ui-angle), #ff3cac, #a33bff, #2b86c5, #00e5c7, #ffd23f, #ff3cac);
+  mask: radial-gradient(farthest-side, transparent calc(100% - max(3px, var(--_s) / 7)), #000 calc(100% - max(3px, var(--_s) / 7) + 1px));
+  filter: drop-shadow(0 0 6px rgb(255 60 172 / 0.8)) drop-shadow(0 0 14px rgb(0 229 199 / 0.5));
+  animation-duration: 0.9s;
+}
+[data-style='extra'] .ui-spinner--dots i,
+[data-style='extra'] .ui-spinner--bars i,
+[data-style='extra'] .ui-spinner--orbit i::before,
+[data-style='extra'] .ui-spinner--pulse .ui-spinner__visual::before,
+[data-style='extra'] .ui-spinner--pulse .ui-spinner__visual::after {
+  background: var(--ui-gradient);
+  box-shadow: 0 0 10px rgb(255 60 172 / 0.7);
+}
+[data-style='extra'] .ui-spinner--dots .ui-spinner__visual,
+[data-style='extra'] .ui-spinner--bars .ui-spinner__visual { animation: ui-spinner-hue 3s linear infinite; }
+[data-style='extra'] .ui-spinner--orbit .ui-spinner__visual {
+  border-color: rgb(255 255 255 / 0.15);
+  background: radial-gradient(circle, #fff 0 8%, rgb(255 210 63 / 0.9) 12%, rgb(255 60 172 / 0.4) 26%, transparent 40%);
+  animation: ui-spinner-hue 4s linear infinite;
+}
+[data-style='extra'] .ui-spinner--pulse .ui-spinner__visual::before { background: conic-gradient(from var(--ui-angle), #ff3cac, #2b86c5, #00e5c7, #ff3cac); }
+@keyframes ui-spinner-hue { to { filter: hue-rotate(360deg); } }

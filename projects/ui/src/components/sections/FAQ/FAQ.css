@@ -1,0 +1,110 @@
+.ui-faq__inner { display: grid; gap: 8px; }
+.ui-faq--centered .ui-faq__list, .ui-faq--centered .ui-faq__contact { width: 100%; max-width: 780px; margin: 0 auto; }
+@container (min-width: 860px) {
+  .ui-faq--split .ui-faq__inner { grid-template-columns: 0.8fr 1.2fr; gap: 64px; align-items: start; }
+  .ui-faq--split .ui-faq__intro { position: sticky; top: 24px; }
+}
+
+.ui-faq__list { display: flex; flex-direction: column; border-top: var(--ui-border-width) solid var(--ui-border); }
+.ui-faq__item { border-bottom: var(--ui-border-width) solid var(--ui-border); }
+.ui-faq__q { margin: 0; font: inherit; }
+.ui-faq__q button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  padding: 20px 4px;
+  border: 0;
+  border-radius: var(--ui-radius-sm);
+  background: none;
+  color: var(--ui-text);
+  font: inherit;
+  font-size: 1.05em;
+  font-weight: var(--ui-weight-strong);
+  text-align: left;
+  cursor: pointer;
+}
+.ui-faq__q button:hover { color: var(--ui-accent); }
+.ui-faq__q button:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ui-focus); }
+.ui-faq__icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--ui-radius-full);
+  background: var(--ui-surface);
+  color: var(--ui-text);
+  transition: transform var(--ui-duration) var(--ui-ease-spring), background var(--ui-duration) var(--ui-ease), color var(--ui-duration) var(--ui-ease);
+}
+.ui-faq__item.is-open .ui-faq__icon { transform: rotate(135deg); background: var(--ui-accent); color: var(--ui-accent-text); }
+
+/* Height animation via grid rows 0fr -> 1fr */
+.ui-faq__a { display: grid; grid-template-rows: 0fr; transition: grid-template-rows var(--ui-duration-slow) var(--ui-ease); }
+.ui-faq__a > div { overflow: hidden; }
+.ui-faq__item.is-open .ui-faq__a { grid-template-rows: 1fr; }
+.ui-faq__a p { margin: 0; padding: 0 48px 22px 4px; color: var(--ui-text-muted); line-height: 1.65; opacity: 0; transform: translateY(-6px); transition: opacity var(--ui-duration) var(--ui-ease), transform var(--ui-duration) var(--ui-ease); }
+.ui-faq__item.is-open .ui-faq__a p { opacity: 1; transform: none; }
+
+.ui-faq__contact {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-top: 32px;
+  padding: 18px 20px;
+  border: var(--ui-border-width) solid var(--ui-raised-border);
+  border-radius: var(--ui-radius-lg);
+  background: var(--ui-raised);
+  backdrop-filter: blur(var(--ui-blur));
+}
+.ui-faq__contact > svg { color: var(--ui-accent); }
+.ui-faq__contact span { display: flex; flex: 1; flex-direction: column; min-width: 180px; }
+.ui-faq__contact small { color: var(--ui-text-muted); }
+.ui-faq--split .ui-faq__contact { margin-top: 0; }
+
+/* ---- Style overrides ---- */
+/* Card-per-question look for the surface-y styles */
+:is([data-style='glass'], [data-style='soft'], [data-style='playful'], [data-style='extra']) .ui-faq__list { gap: 12px; border-top: 0; }
+:is([data-style='glass'], [data-style='soft'], [data-style='playful'], [data-style='extra']) .ui-faq__item {
+  padding: 0 16px;
+  border: var(--ui-border-width) solid var(--ui-raised-border);
+  border-radius: var(--ui-radius-lg);
+  background: var(--ui-raised);
+  backdrop-filter: blur(var(--ui-blur));
+}
+[data-style='soft'] .ui-faq__item { border: 0; box-shadow: var(--ui-shadow-sm); transition: box-shadow var(--ui-duration) var(--ui-ease); }
+[data-style='soft'] .ui-faq__item.is-open { box-shadow: var(--ui-shadow-inset); }
+[data-style='soft'] .ui-faq__icon { background: var(--ui-bg); box-shadow: var(--ui-shadow-sm); }
+[data-style='soft'] .ui-faq__contact { border: 0; box-shadow: var(--ui-shadow-md); }
+[data-style='playful'] .ui-faq__item { border-color: var(--ui-border); box-shadow: var(--ui-shadow-sm); }
+[data-style='playful'] .ui-faq__item.is-open { background: var(--ui-accent-soft); box-shadow: var(--ui-shadow-md); }
+[data-style='playful'] .ui-faq__icon { border: 2px solid var(--ui-border); }
+
+[data-style='brutalist'] .ui-faq__list { border-top-width: var(--ui-border-width); }
+[data-style='brutalist'] .ui-faq__q button { font-size: 1.2em; text-transform: uppercase; }
+[data-style='brutalist'] .ui-faq__q button:hover { color: var(--ui-text); text-decoration: underline 3px; text-underline-offset: 4px; }
+[data-style='brutalist'] .ui-faq__item.is-open .ui-faq__q button { background: var(--ui-accent); color: var(--ui-accent-text); }
+[data-style='brutalist'] .ui-faq__q button { padding-inline: 10px; border-radius: 0; }
+[data-style='brutalist'] .ui-faq__icon { border: var(--ui-border-width) solid var(--ui-border); background: var(--ui-bg); border-radius: 0; }
+[data-style='brutalist'] .ui-faq__item.is-open .ui-faq__icon { background: #000; color: #ffe500; }
+[data-style='brutalist'] .ui-faq__a p { padding-left: 10px; color: var(--ui-text); }
+:is([data-style='brutalist'], [data-style='mono']) .ui-faq__contact { border-color: var(--ui-border); box-shadow: var(--ui-shadow-md); }
+[data-style='mono'] .ui-faq__icon { border: var(--ui-border-width) solid var(--ui-border); background: none; }
+[data-style='mono'] .ui-faq__q button::before { content: counter(faq, decimal-leading-zero); counter-increment: faq; color: var(--ui-text-muted); font-weight: 400; }
+[data-style='mono'] .ui-faq__list { counter-reset: faq; }
+[data-style='mono'] .ui-faq__q button span:first-of-type { flex: 1; }
+
+[data-style='corporate'] .ui-faq__icon { background: none; border: 1px solid var(--ui-border); }
+
+/* Extra: the open question gets an animated rainbow border and glowing icon; sparkles on open */
+[data-style='extra'] .ui-faq__item { transition: transform var(--ui-duration) var(--ui-ease-spring), box-shadow var(--ui-duration) var(--ui-ease); }
+[data-style='extra'] .ui-faq__item:hover { transform: translateX(6px); }
+[data-style='extra'] .ui-faq__item.is-open {
+  border: 2px solid transparent;
+  background: linear-gradient(var(--ui-bg), var(--ui-bg)) padding-box, var(--ui-gradient) border-box;
+  box-shadow: var(--ui-glow);
+}
+[data-style='extra'] .ui-faq__item.is-open .ui-faq__icon { background: var(--ui-gradient); box-shadow: var(--ui-glow); }
+[data-style='extra'] .ui-faq__item.is-open .ui-faq__q button span:first-child { background: var(--ui-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }

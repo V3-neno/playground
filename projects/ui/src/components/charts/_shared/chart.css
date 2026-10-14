@@ -1,0 +1,123 @@
+/* Shared chart chrome: shell, legend, tooltip, axes. Individual charts add their marks on top. */
+.ui-chart {
+  position: relative;
+  margin: 0;
+  width: 100%;
+  min-width: 0;
+  color: var(--ui-text);
+}
+.ui-chart--card {
+  padding: 18px 20px 16px;
+  border: var(--ui-border-width) solid var(--ui-raised-border);
+  border-radius: var(--ui-radius-lg);
+  background: var(--ui-raised);
+  box-shadow: var(--ui-shadow-md);
+  backdrop-filter: blur(var(--ui-blur));
+}
+.ui-chart__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.ui-chart__title { font-size: 1.05em; }
+.ui-chart__subtitle { margin-top: 2px; font-size: 0.85em; color: var(--ui-text-muted); }
+.ui-chart__actions { display: flex; gap: 6px; }
+
+.ui-chart__plot { position: relative; width: 100%; }
+.ui-chart__plot > svg { display: block; overflow: visible; }
+
+/* Axes: recessive. Text wears text tokens, never series colours. */
+.ui-chart__axis text { fill: var(--ui-text-muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.ui-chart__grid { stroke: var(--ui-border); stroke-width: 1; shape-rendering: crispEdges; }
+.ui-chart__grid--zero { stroke: var(--ui-text-muted); opacity: 0.6; }
+.ui-chart__crosshair { stroke: var(--ui-text-muted); stroke-width: 1; stroke-dasharray: 3 3; pointer-events: none; }
+.ui-chart__hit { fill: transparent; cursor: crosshair; }
+
+/* Legend */
+.ui-chart__legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0 0 10px; padding: 0; list-style: none; font-size: 0.85em; }
+.ui-chart__legend-item {
+  display: inline-flex; align-items: center; gap: 7px; padding: 2px 0;
+  border: 0; background: none; color: var(--ui-text); font: inherit;
+  transition: opacity var(--ui-duration-fast) var(--ui-ease);
+}
+button.ui-chart__legend-item { cursor: pointer; }
+button.ui-chart__legend-item:hover { color: var(--ui-text); }
+.ui-chart__legend-item[data-off] { opacity: 0.4; text-decoration: line-through; }
+.ui-chart__legend-item:focus-visible { outline: 2px solid var(--ui-focus); outline-offset: 2px; border-radius: 4px; }
+.ui-chart__legend-value { margin-left: 2px; color: var(--ui-text-muted); font-variant-numeric: tabular-nums; }
+.ui-chart__swatch { flex: none; display: inline-block; width: 10px; height: 10px; border-radius: 3px; }
+.ui-chart__swatch--dot { width: 8px; height: 8px; border-radius: 50%; }
+.ui-chart__swatch--line { width: 14px; height: 3px; border-radius: 2px; }
+
+/* Tooltip */
+.ui-chart__tooltip {
+  position: absolute;
+  z-index: 5;
+  min-width: 120px;
+  padding: 8px 10px;
+  border: var(--ui-border-width) solid var(--ui-raised-border);
+  border-radius: var(--ui-radius-md);
+  background: var(--ui-raised);
+  box-shadow: var(--ui-shadow-lg);
+  backdrop-filter: blur(var(--ui-blur));
+  color: var(--ui-text);
+  font-size: 12.5px;
+  line-height: 1.35;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: ui-chart-tip-in var(--ui-duration-fast) var(--ui-ease);
+}
+@keyframes ui-chart-tip-in { from { opacity: 0; } }
+.ui-chart__tooltip-title { margin-bottom: 5px; font-weight: var(--ui-weight-strong); }
+.ui-chart__tooltip-row { display: flex; align-items: center; gap: 7px; }
+.ui-chart__tooltip-row[data-dim] { opacity: 0.45; }
+.ui-chart__tooltip-label { color: var(--ui-text-muted); }
+.ui-chart__tooltip-value { margin-left: auto; padding-left: 14px; font-weight: var(--ui-weight-strong); font-variant-numeric: tabular-nums; }
+.ui-chart__tooltip-footer { margin-top: 5px; padding-top: 5px; border-top: 1px solid var(--ui-border); color: var(--ui-text-muted); }
+
+/* Mark basics shared by several charts */
+.ui-chart__dot { stroke: var(--ui-bg); stroke-width: 2; }
+.ui-chart__focus-dot { stroke: var(--ui-bg); stroke-width: 2.5; pointer-events: none; }
+
+/* ---- Style overrides ---- */
+
+/* Glass: the opaque bg isn't what's behind a mark, so use the raised tint for the surface ring */
+[data-style='glass'] .ui-chart__dot,
+[data-style='glass'] .ui-chart__focus-dot { stroke: rgb(255 255 255 / 0.85); }
+[data-style='glass'][data-theme='dark'] .ui-chart__dot,
+[data-style='glass'][data-theme='dark'] .ui-chart__focus-dot { stroke: #0a0c1d; }
+
+/* Soft: extruded card, sunken tooltip feel */
+[data-style='soft'] .ui-chart__grid { stroke-dasharray: 2 4; }
+[data-style='soft'] .ui-chart__swatch { border-radius: 50%; box-shadow: var(--ui-shadow-sm); }
+
+/* Brutalist: heavy ink, uppercase labels, hard tooltip */
+[data-style='brutalist'] .ui-chart__axis text { fill: var(--ui-text); font-weight: 700; text-transform: uppercase; font-size: 10.5px; }
+[data-style='brutalist'] .ui-chart__grid { stroke: var(--ui-text); stroke-opacity: 0.18; stroke-width: 1.5; }
+[data-style='brutalist'] .ui-chart__grid--zero { stroke-opacity: 1; stroke-width: 3; }
+[data-style='brutalist'] .ui-chart__swatch { border-radius: 0; outline: 2px solid var(--ui-border); }
+[data-style='brutalist'] .ui-chart__tooltip { border-radius: 0; text-transform: uppercase; font-size: 11.5px; }
+[data-style='brutalist'] .ui-chart__crosshair { stroke: var(--ui-text); stroke-dasharray: none; stroke-width: 2; }
+
+/* Mono: dotted grid, square swatches with an ink outline */
+[data-style='mono'] .ui-chart__grid { stroke-dasharray: 1 3; stroke: var(--ui-text-muted); }
+[data-style='mono'] .ui-chart__swatch { border-radius: 0; outline: 1.5px solid var(--ui-text); }
+[data-style='mono'] .ui-chart__tooltip { border-radius: 0; }
+
+/* Playful: chunky, round and bouncy */
+[data-style='playful'] .ui-chart__swatch { border-radius: 50%; outline: 2px solid var(--ui-border); outline-offset: -1px; }
+[data-style='playful'] .ui-chart__swatch--line { outline: none; height: 4px; border-radius: 4px; }
+[data-style='mono'] .ui-chart__swatch--line,
+[data-style='brutalist'] .ui-chart__swatch--line { outline: none; height: 3px; }
+[data-style='playful'] .ui-chart__tooltip { border-radius: var(--ui-radius-md); animation-timing-function: var(--ui-ease-spring); }
+[data-style='playful'] .ui-chart__grid { stroke-dasharray: 0.5 6; stroke-linecap: round; stroke-width: 2.5; }
+[data-style='playful'] .ui-chart__axis text { font-weight: 700; }
+
+/* Extra: glowing swatches, a neon tooltip with a rotating gradient edge */
+[data-style='extra'] .ui-chart__swatch { box-shadow: 0 0 8px currentColor; }
+[data-style='extra'] .ui-chart__tooltip {
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(var(--ui-raised), var(--ui-raised)) padding-box,
+    linear-gradient(var(--ui-bg), var(--ui-bg)) padding-box,
+    var(--ui-gradient) border-box;
+  box-shadow: var(--ui-shadow-lg), var(--ui-glow);
+}
+[data-style='extra'] .ui-chart__crosshair { stroke: var(--ui-accent); stroke-dasharray: 2 4; filter: drop-shadow(0 0 4px var(--ui-accent)); }
+[data-style='extra'] .ui-chart__title { background: var(--ui-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }

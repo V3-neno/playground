@@ -21,17 +21,18 @@
     box-shadow var(--ui-duration-fast) var(--ui-ease),
     transform var(--ui-duration-fast) var(--ui-ease);
 }
+.ui-button:hover:not(:disabled) { transform: translateY(var(--ui-hover-lift)); }
 .ui-button:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ui-focus); }
-.ui-button:active:not(:disabled) { transform: translateY(1px); }
+.ui-button:active:not(:disabled) { transform: scale(var(--ui-press-scale)); }
 .ui-button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .ui-button--sm { --_h: 30px; --_px: 12px; font-size: 0.875em; }
 .ui-button--lg { --_h: 46px; --_px: 22px; font-size: 1.0625em; }
 
 .ui-button--solid { background: var(--ui-accent); color: var(--ui-accent-text); box-shadow: var(--ui-shadow-sm); }
-.ui-button--solid:hover:not(:disabled) { background: var(--ui-accent-hover); }
+.ui-button--solid:hover:not(:disabled) { background: var(--ui-accent-hover); box-shadow: var(--ui-shadow-sm), var(--ui-glow); }
 
-.ui-button--outline { background: transparent; color: var(--ui-text); border-color: var(--ui-border); }
+.ui-button--outline { background: var(--ui-raised); color: var(--ui-text); border-color: var(--ui-border); }
 .ui-button--outline:hover:not(:disabled) { background: var(--ui-surface); }
 
 .ui-button--ghost { background: transparent; color: var(--ui-text); }
@@ -51,3 +52,51 @@
 }
 @keyframes ui-button-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .ui-button__spinner { animation-duration: 2s; } }
+
+/* ---- Style overrides: only what tokens can't express ---- */
+
+/* Glass: frosted outline buttons */
+[data-style='glass'] .ui-button--outline { backdrop-filter: blur(var(--ui-blur)); border-color: var(--ui-raised-border); }
+[data-style='glass'] .ui-button--solid { background: var(--ui-gradient); }
+
+/* Soft: extruded, and pressed in while active */
+[data-style='soft'] .ui-button--outline,
+[data-style='soft'] .ui-button--ghost { box-shadow: var(--ui-shadow-sm); }
+[data-style='soft'] .ui-button:active:not(:disabled) { box-shadow: var(--ui-shadow-inset); }
+
+/* Brutalist + mono + playful: the offset shadow is the button; pressing pushes it into the page */
+:is([data-style='brutalist'], [data-style='playful'], [data-style='mono']) .ui-button {
+  border-color: var(--ui-border);
+  box-shadow: var(--ui-shadow-sm);
+}
+:is([data-style='brutalist'], [data-style='playful'], [data-style='mono']) .ui-button:hover:not(:disabled) { box-shadow: var(--ui-shadow-md); }
+:is([data-style='brutalist'], [data-style='playful'], [data-style='mono']) .ui-button:active:not(:disabled) {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+[data-style='brutalist'] .ui-button { text-transform: uppercase; letter-spacing: 0.04em; }
+[data-style='playful'] .ui-button { border-radius: var(--ui-radius-full); }
+
+/* Extra: animated gradient fill, glow, and a light sweep on hover */
+[data-style='extra'] .ui-button--solid {
+  background: var(--ui-gradient);
+  background-size: 200% 100%;
+  box-shadow: var(--ui-glow);
+  overflow: hidden;
+  isolation: isolate;
+}
+[data-style='extra'] .ui-button--solid::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.55) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform 0.6s var(--ui-ease);
+}
+[data-style='extra'] .ui-button--solid:hover:not(:disabled)::after { transform: translateX(120%); }
+[data-style='extra'] .ui-button--outline {
+  border: 2px solid transparent;
+  background: linear-gradient(var(--ui-bg), var(--ui-bg)) padding-box, var(--ui-gradient) border-box;
+}
+[data-style='extra'] .ui-button--outline:hover:not(:disabled) { box-shadow: var(--ui-glow); }

@@ -1,0 +1,40 @@
+.ui-bar__bar {
+  transition:
+    transform var(--ui-duration-slow) var(--ui-ease-spring),
+    opacity var(--ui-duration-fast) var(--ui-ease),
+    d var(--ui-duration) var(--ui-ease);
+}
+.ui-bar__shine { pointer-events: none; transition: d var(--ui-duration) var(--ui-ease); mix-blend-mode: soft-light; }
+.ui-bar__group { transition: opacity var(--ui-duration-fast) var(--ui-ease); }
+svg[data-hovering] .ui-bar__group:not([data-active]) { opacity: 0.38; }
+.ui-bar__values text { fill: var(--ui-text); font-size: 11px; font-weight: var(--ui-weight-strong); font-variant-numeric: tabular-nums; transition: opacity var(--ui-duration) var(--ui-ease) 0.4s; }
+.ui-bar__cats text { font-size: 12px; fill: var(--ui-text); }
+
+/* ---- Style overrides ---- */
+
+/* Glass: frosted bars with a bright rim */
+[data-style='glass'] .ui-bar__bar { fill-opacity: 0.82; stroke: rgb(255 255 255 / 0.7); stroke-width: 1; }
+[data-style='glass'][data-theme='dark'] .ui-bar__bar { stroke: rgb(255 255 255 / 0.25); }
+
+/* Soft: bars extruded from the surface */
+[data-style='soft'] .ui-bar__bar { filter: drop-shadow(2px 3px 3px #b8bfcc) drop-shadow(-2px -2px 3px #ffffff); }
+[data-style='soft'][data-theme='dark'] .ui-bar__bar { filter: drop-shadow(3px 3px 4px #1a1c21) drop-shadow(-2px -2px 3px #393e49); }
+
+/* Brutalist: thick ink outline, offset shadow */
+[data-style='brutalist'] .ui-bar__bar { stroke: var(--ui-border); stroke-width: 2.5; stroke-linejoin: miter; filter: drop-shadow(3px 3px 0 var(--ui-border)); }
+[data-style='brutalist'] .ui-bar__values text { font-weight: 800; font-size: 12px; }
+[data-style='brutalist'] .ui-bar__cats text { font-weight: 700; text-transform: uppercase; }
+
+/* Mono: hatched fills need an ink edge */
+[data-style='mono'] .ui-bar__bar { stroke: var(--ui-text); stroke-width: 1.5; }
+[data-style='mono'] .ui-bar__bar { transition-timing-function: steps(5, end), ease, ease; }
+
+/* Playful: candy pills with an outline; hover makes the active bars bounce */
+[data-style='playful'] .ui-bar__bar { stroke: var(--ui-border); stroke-width: 2; }
+[data-style='playful'] svg[data-hovering] .ui-bar__group[data-active] .ui-bar__bar { animation: ui-bar-boing 0.5s var(--ui-ease-spring); }
+@keyframes ui-bar-boing { 40% { transform: scale(1, 1.06); } }
+
+/* Extra: neon glow, shimmer sweep (gradient animates in useChart), active bars flare */
+[data-style='extra'] .ui-bar__bar { filter: drop-shadow(0 0 6px currentColor); }
+[data-style='extra'] svg[data-hovering] .ui-bar__group[data-active] .ui-bar__bar { filter: drop-shadow(0 0 10px currentColor) drop-shadow(0 0 22px currentColor) brightness(1.15); }
+[data-style='extra'] .ui-bar__values text { fill: var(--ui-text); filter: drop-shadow(0 0 4px var(--ui-accent)); }

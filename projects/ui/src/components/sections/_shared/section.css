@@ -1,0 +1,105 @@
+/* Shared by every Sections component: section shell, header, cards, decorative blobs. */
+.ui-sec {
+  position: relative;
+  padding: clamp(48px, 8cqi, 112px) clamp(20px, 5cqi, 64px);
+  overflow: hidden;
+  isolation: isolate;
+}
+.ui-sec__inner { position: relative; max-width: 1140px; margin: 0 auto; min-width: 0; }
+
+.ui-sec__head { max-width: 700px; margin: 0 auto 44px; text-align: center; }
+.ui-sec__head[data-align='left'] { margin-left: 0; text-align: left; }
+.ui-sec__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 14px;
+  color: var(--ui-accent);
+  font-size: 0.8em;
+  font-weight: var(--ui-weight-strong);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.ui-sec__title { margin: 0 0 14px; font-size: clamp(28px, 4.6cqi, 46px); text-wrap: balance; }
+.ui-sec__lead { margin: 0; color: var(--ui-text-muted); font-size: 1.1em; text-wrap: pretty; }
+
+.ui-sec-card {
+  position: relative;
+  background: var(--ui-raised);
+  border: var(--ui-border-width) solid var(--ui-raised-border);
+  border-radius: var(--ui-radius-lg);
+  box-shadow: var(--ui-shadow-sm);
+  backdrop-filter: blur(var(--ui-blur));
+  -webkit-backdrop-filter: blur(var(--ui-blur));
+}
+
+/* Decorative floating blobs (Extra style only) */
+.ui-sec-blobs { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+.ui-sec-blobs span {
+  position: absolute;
+  width: 38cqi;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.55;
+  animation: ui-sec-float 14s ease-in-out infinite;
+}
+.ui-sec-blobs span:nth-child(1) { left: -8%; top: -10%; background: #ff3cac; }
+.ui-sec-blobs span:nth-child(2) { right: -10%; top: 20%; background: #2b86c5; animation-delay: -5s; animation-duration: 18s; }
+.ui-sec-blobs span:nth-child(3) { left: 30%; bottom: -25%; background: #00e5c7; animation-delay: -9s; animation-duration: 16s; }
+@keyframes ui-sec-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(6%, 10%) scale(1.15); }
+  66% { transform: translate(-8%, 4%) scale(0.9); }
+}
+@media (prefers-reduced-motion: reduce) { .ui-sec-blobs span { animation: none; } }
+
+/* Shared focus ring */
+.ui-sec :is(a, button, input):focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ui-focus); }
+
+/* ---- Style overrides ---- */
+[data-style='soft'] .ui-sec-card { box-shadow: var(--ui-shadow-md); }
+:is([data-style='brutalist'], [data-style='playful'], [data-style='mono']) .ui-sec-card {
+  border-color: var(--ui-border);
+  box-shadow: var(--ui-shadow-md);
+}
+[data-style='brutalist'] .ui-sec__eyebrow {
+  padding: 4px 10px;
+  background: var(--ui-accent);
+  color: var(--ui-accent-text);
+  border: var(--ui-border-width) solid var(--ui-border);
+}
+[data-style='brutalist'] .ui-sec__title { font-size: clamp(34px, 7cqi, 72px); line-height: 0.95; }
+[data-style='mono'] .ui-sec__eyebrow::before { content: '//'; }
+[data-style='playful'] .ui-sec__eyebrow {
+  padding: 4px 12px;
+  border-radius: var(--ui-radius-full);
+  background: var(--ui-accent-soft);
+  rotate: -2deg;
+}
+
+/* Highlighted word in titles */
+.ui-sec__hl { white-space: nowrap; }
+@container (max-width: 560px) { .ui-sec__hl { white-space: normal; } }
+/* Syne is very wide: tone section titles down a notch in Extra */
+[data-style='extra'] .ui-sec__title { font-size: clamp(26px, 4cqi, 42px); }
+[data-style='brutalist'] .ui-sec__hl {
+  background: var(--ui-accent);
+  color: var(--ui-accent-text);
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  display: inline-block;
+  margin: 0.08em 0;
+  padding: 0.04em 0.12em 0;
+  line-height: 0.95;
+  box-shadow: var(--ui-shadow-sm);
+}
+[data-style='mono'] .ui-sec__hl {
+  color: var(--ui-text);
+  background: none;
+  text-decoration: underline wavy var(--ui-chart-2) 0.08em;
+  text-underline-offset: 0.12em;
+}
+[data-style='playful'] .ui-sec__hl { display: inline-block; rotate: -2deg; }
+[data-style='extra'] .ui-sec__hl { filter: drop-shadow(0 0 18px rgb(255 60 172 / 0.45)); }
+[data-style='extra'] .ui-sec-card { box-shadow: var(--ui-shadow-md); }

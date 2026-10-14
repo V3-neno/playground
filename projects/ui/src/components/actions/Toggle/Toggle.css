@@ -1,0 +1,98 @@
+.ui-toggle {
+  --_h: 36px;
+  --_px: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: var(--_h);
+  min-width: var(--_h);
+  padding: 0 var(--_px);
+  border: var(--ui-border-width) solid transparent;
+  border-radius: var(--ui-radius-md);
+  background: transparent;
+  color: var(--ui-text-muted);
+  font: inherit;
+  font-weight: var(--ui-weight-strong);
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--ui-duration-fast) var(--ui-ease),
+    border-color var(--ui-duration-fast) var(--ui-ease),
+    box-shadow var(--ui-duration-fast) var(--ui-ease),
+    color var(--ui-duration-fast) var(--ui-ease),
+    transform var(--ui-duration-fast) var(--ui-ease);
+}
+.ui-toggle--sm { --_h: 28px; --_px: 9px; font-size: 0.875em; }
+.ui-toggle--lg { --_h: 44px; --_px: 16px; }
+.ui-toggle--icon-only { padding: 0; }
+.ui-toggle:hover:not(:disabled) { color: var(--ui-text); }
+.ui-toggle:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ui-focus); }
+.ui-toggle:active:not(:disabled) { transform: scale(var(--ui-press-scale)); }
+.ui-toggle:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.ui-toggle--outline { border-color: var(--ui-border); background: var(--ui-raised); }
+.ui-toggle--outline:hover:not(:disabled) { background: var(--ui-surface); }
+.ui-toggle--ghost:hover:not(:disabled) { background: var(--ui-surface); }
+
+.ui-toggle[aria-pressed='true'] { background: var(--ui-accent-soft); color: var(--ui-accent); }
+.ui-toggle--outline[aria-pressed='true'] { border-color: color-mix(in oklab, var(--ui-accent) 55%, var(--ui-border)); }
+.ui-toggle[aria-pressed='true']:hover:not(:disabled) { background: var(--ui-accent-soft); color: var(--ui-accent); }
+
+.ui-toggle__icon { display: grid; place-items: center; }
+
+/* Toolbars of toggles: <div role="toolbar" className="ui-toggle-bar"> */
+.ui-toggle-bar { display: inline-flex; gap: 4px; padding: 4px; border: var(--ui-border-width) solid var(--ui-border); border-radius: var(--ui-radius-md); background: var(--ui-raised); }
+.ui-toggle-bar .ui-toggle { border-color: transparent; background: transparent; }
+.ui-toggle-bar .ui-toggle[aria-pressed='true'] { background: var(--ui-accent-soft); }
+.ui-toggle-bar__sep { width: var(--ui-border-width); min-width: 1px; margin: 4px 2px; background: var(--ui-border); }
+
+/* ---- Style overrides ---- */
+
+[data-style='corporate'] .ui-toggle[aria-pressed='true'] { background: var(--ui-accent-soft); }
+
+[data-style='glass'] .ui-toggle--outline,
+[data-style='glass'] .ui-toggle-bar { backdrop-filter: blur(var(--ui-blur)); border-color: var(--ui-raised-border); }
+
+/* Soft: off = extruded, on = pressed into the surface. The neumorphic toggle. */
+[data-style='soft'] .ui-toggle--outline,
+[data-style='soft'] .ui-toggle-bar { box-shadow: var(--ui-shadow-sm); }
+[data-style='soft'] .ui-toggle[aria-pressed='true'],
+[data-style='soft'] .ui-toggle-bar .ui-toggle[aria-pressed='true'] { background: var(--ui-surface); box-shadow: var(--ui-shadow-inset); }
+
+/* Brutalist / mono / playful: off sticks out, on is pushed in and filled */
+:is([data-style='brutalist'], [data-style='mono'], [data-style='playful']) .ui-toggle--outline { border-color: var(--ui-border); box-shadow: var(--ui-shadow-sm); color: var(--ui-text); }
+:is([data-style='brutalist'], [data-style='mono'], [data-style='playful']) .ui-toggle--outline[aria-pressed='true'] {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+  border-color: var(--ui-border);
+  background: var(--ui-accent);
+  color: var(--ui-accent-text);
+}
+:is([data-style='brutalist'], [data-style='mono'], [data-style='playful']) .ui-toggle-bar { border-color: var(--ui-border); box-shadow: var(--ui-shadow-sm); }
+:is([data-style='brutalist'], [data-style='mono'], [data-style='playful']) .ui-toggle-bar .ui-toggle { border-color: transparent; box-shadow: none; transform: none; }
+:is([data-style='brutalist'], [data-style='mono'], [data-style='playful']) .ui-toggle-bar .ui-toggle[aria-pressed='true'] { background: var(--ui-accent); color: var(--ui-accent-text); border-color: var(--ui-border); }
+[data-style='playful'] .ui-toggle-bar { border-radius: var(--ui-radius-full); }
+[data-style='playful'] .ui-toggle-bar .ui-toggle { border-radius: var(--ui-radius-full); }
+[data-style='brutalist'] .ui-toggle { text-transform: uppercase; letter-spacing: 0.04em; }
+[data-style='playful'] .ui-toggle--outline { border-radius: var(--ui-radius-full); }
+[data-style='playful'] .ui-toggle[aria-pressed='true'] .ui-toggle__icon { animation: ui-toggle-boing 0.5s var(--ui-ease-spring); }
+@keyframes ui-toggle-boing { 40% { transform: scale(1.35) rotate(-10deg); } }
+
+/* Extra: "on" glows in rotating gradient, the icon does a pop when switched on */
+[data-style='extra'] .ui-toggle--outline { backdrop-filter: blur(var(--ui-blur)); }
+[data-style='extra'] .ui-toggle[aria-pressed='true'],
+[data-style='extra'] .ui-toggle-bar .ui-toggle[aria-pressed='true'] {
+  border-color: transparent;
+  background: var(--ui-gradient);
+  color: #fff;
+  box-shadow: var(--ui-glow);
+}
+[data-style='extra'] .ui-toggle-bar { backdrop-filter: blur(var(--ui-blur)); }
+[data-style='extra'] .ui-toggle__icon[data-pop] { animation: ui-toggle-pop 0.65s var(--ui-ease-spring); }
+@keyframes ui-toggle-pop {
+  0% { transform: scale(0.4) rotate(-40deg); }
+  60% { transform: scale(1.45) rotate(12deg); }
+  100% { transform: scale(1) rotate(0); }
+}

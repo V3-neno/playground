@@ -1,0 +1,82 @@
+.ui-page-transition {
+  --_dur: var(--ui-duration-slow);
+  position: relative;
+  display: grid;
+  overflow: hidden;
+}
+.ui-page-transition__page { grid-area: 1 / 1; min-width: 0; }
+.ui-page-transition__page.is-exit { pointer-events: none; z-index: 0; }
+.ui-page-transition__page.is-enter { z-index: 1; }
+.ui-page-transition__page.is-enter,
+.ui-page-transition__page.is-exit { animation-duration: var(--_dur); animation-timing-function: var(--ui-ease); animation-fill-mode: both; }
+
+/* fade */
+.ui-page-transition--fade .is-enter { animation-name: ui-pt-fade-in; animation-delay: calc(var(--_dur) * 0.25); }
+.ui-page-transition--fade .is-exit { animation-name: ui-pt-fade-out; animation-duration: calc(var(--_dur) * 0.6); }
+@keyframes ui-pt-fade-in { from { opacity: 0; transform: translateY(8px); } }
+@keyframes ui-pt-fade-out { to { opacity: 0; } }
+
+/* slide (direction aware) */
+.ui-page-transition--slide .is-enter { animation-name: ui-pt-slide-in; }
+.ui-page-transition--slide .is-exit { animation-name: ui-pt-slide-out; }
+@keyframes ui-pt-slide-in { from { transform: translateX(calc(var(--_dir) * 100%)); } }
+@keyframes ui-pt-slide-out { to { transform: translateX(calc(var(--_dir) * -35%)); opacity: 0.3; } }
+
+/* scale */
+.ui-page-transition--scale .is-enter { animation-name: ui-pt-scale-in; }
+.ui-page-transition--scale .is-exit { animation-name: ui-pt-scale-out; }
+@keyframes ui-pt-scale-in { from { opacity: 0; transform: scale(1.08); } }
+@keyframes ui-pt-scale-out { to { opacity: 0; transform: scale(0.92); } }
+
+/* flip */
+.ui-page-transition--flip { perspective: 1400px; }
+.ui-page-transition--flip .ui-page-transition__page { backface-visibility: hidden; }
+.ui-page-transition--flip .is-enter { animation-name: ui-pt-flip-in; }
+.ui-page-transition--flip .is-exit { animation-name: ui-pt-flip-out; }
+@keyframes ui-pt-flip-in { from { transform: rotateY(calc(var(--_dir) * 180deg)); } }
+@keyframes ui-pt-flip-out { to { transform: rotateY(calc(var(--_dir) * -180deg)); } }
+
+/* wipe */
+.ui-page-transition--wipe .is-enter { animation-name: ui-pt-wipe-in; }
+.ui-page-transition--wipe .is-exit { animation-name: ui-pt-hold; }
+@keyframes ui-pt-wipe-in { from { clip-path: inset(0 0 0 100%); } to { clip-path: inset(0 0 0 0); } }
+@keyframes ui-pt-hold { to { opacity: 0.6; } }
+
+/* portal: a circle opening from the last click */
+.ui-page-transition--portal .is-enter { animation-name: ui-pt-portal-in; animation-duration: calc(var(--_dur) * 1.4); }
+.ui-page-transition--portal .is-exit { animation-name: ui-pt-portal-out; animation-duration: calc(var(--_dur) * 1.4); }
+@keyframes ui-pt-portal-in { from { clip-path: circle(0% at var(--_origin, 50% 50%)); } to { clip-path: circle(150% at var(--_origin, 50% 50%)); } }
+@keyframes ui-pt-portal-out { to { transform: scale(0.94); filter: blur(4px); opacity: 0.4; } }
+
+/* ---- Style overrides ---- */
+[data-style='brutalist'] .ui-page-transition__page { animation-timing-function: steps(4, end) !important; }
+[data-style='mono'] .ui-page-transition__page { animation-timing-function: steps(6, end) !important; }
+[data-style='playful'] .ui-page-transition--fade .is-enter { animation-name: ui-pt-bounce-in; animation-timing-function: var(--ui-ease-spring); }
+@keyframes ui-pt-bounce-in { from { opacity: 0; transform: translateY(30px) scale(0.92) rotate(-1.5deg); } }
+[data-style='glass'] .ui-page-transition--fade .is-enter { animation-name: ui-pt-focus-in; }
+@keyframes ui-pt-focus-in { from { opacity: 0; filter: blur(10px); transform: scale(1.02); } }
+[data-style='soft'] .ui-page-transition { --_dur: 600ms; }
+
+/* Extra: the portal gets a glowing rainbow rim, and the leaving page glitches out */
+[data-style='extra'] .ui-page-transition--portal .is-enter { position: relative; }
+[data-style='extra'] .ui-page-transition--portal .is-enter::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  background: radial-gradient(circle at var(--_origin, 50% 50%), transparent 0, transparent 40%, rgb(255 60 172 / 0.55) 46%, rgb(0 229 199 / 0.5) 52%, transparent 60%);
+  background-size: 300% 300%;
+  background-position: var(--_origin, 50% 50%);
+  animation: ui-pt-rim calc(var(--_dur) * 1.4) var(--ui-ease) both;
+  mix-blend-mode: screen;
+}
+@keyframes ui-pt-rim { from { opacity: 1; transform: scale(0.2); } to { opacity: 0; transform: scale(2.2); } }
+[data-style='extra'] .ui-page-transition .is-exit { animation-name: ui-pt-glitch-out; }
+@keyframes ui-pt-glitch-out {
+  0% { transform: none; filter: none; }
+  20% { transform: translate(-6px, 2px) skewX(8deg); filter: hue-rotate(90deg); }
+  40% { transform: translate(5px, -2px) skewX(-6deg); filter: hue-rotate(200deg) saturate(2); }
+  60% { transform: translate(-3px, 0) scale(0.97); clip-path: inset(10% 0 30% 0); }
+  100% { transform: scale(0.9); opacity: 0; filter: blur(6px) hue-rotate(300deg); clip-path: inset(40% 0 40% 0); }
+}

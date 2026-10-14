@@ -1,0 +1,52 @@
+.ui-parallax {
+  --_p: 0;
+  --_mx: 0;
+  --_my: 0;
+  --_range: 120px; /* how far a speed-1 layer travels */
+  position: relative;
+  overflow: hidden;
+  border: var(--ui-border-width) solid var(--ui-raised-border);
+  border-radius: var(--ui-radius-lg);
+  background: var(--ui-surface);
+  box-shadow: var(--ui-shadow-md);
+}
+.ui-parallax__scene { position: absolute; inset: 0; }
+.ui-parallax__layer {
+  position: absolute;
+  inset: -16%; /* room to move without showing edges */
+  pointer-events: none;
+  will-change: transform;
+}
+.ui-parallax--scroll .ui-parallax__layer {
+  transform: translate3d(0, calc(var(--_p) * var(--_speed) * var(--_strength) * var(--_range)), 0);
+}
+.ui-parallax--pointer .ui-parallax__layer {
+  transform: translate3d(
+    calc(var(--_mx) * var(--_speed) * var(--_strength) * -40px),
+    calc(var(--_my) * var(--_speed) * var(--_strength) * -30px),
+    0
+  );
+  transition: transform 0.35s var(--ui-ease);
+}
+.ui-parallax__layer > * { pointer-events: auto; }
+
+/* ---- Style overrides ---- */
+[data-style='soft'] .ui-parallax { border: 0; box-shadow: var(--ui-shadow-inset); }
+:is([data-style='brutalist'], [data-style='mono'], [data-style='playful']) .ui-parallax { border-color: var(--ui-border); box-shadow: var(--ui-shadow-md); }
+[data-style='brutalist'] .ui-parallax--pointer .ui-parallax__layer { transition-timing-function: steps(3, end); }
+[data-style='playful'] .ui-parallax--pointer .ui-parallax__layer { transition: transform 0.6s var(--ui-ease-spring); }
+
+/* Extra: the scene becomes a 3D diorama, tilting toward the cursor with layers at real depth,
+   and colours drift with scroll */
+.ui-parallax.is-fx { perspective: 900px; }
+.ui-parallax.is-fx .ui-parallax__scene {
+  transform-style: preserve-3d;
+  transform: rotateX(calc(var(--_my) * -7deg)) rotateY(calc(var(--_mx) * 9deg));
+  transition: transform 0.5s var(--ui-ease);
+}
+.ui-parallax.is-fx.ui-parallax--pointer .ui-parallax__layer {
+  transform:
+    translate3d(calc(var(--_mx) * var(--_speed) * -40px), calc(var(--_my) * var(--_speed) * -30px), calc(var(--_speed) * 80px));
+}
+.ui-parallax.is-fx.ui-parallax--scroll .ui-parallax__layer { filter: hue-rotate(calc(var(--_p) * 60deg)); }
+.ui-parallax.is-fx { box-shadow: var(--ui-glow), var(--ui-shadow-lg); }

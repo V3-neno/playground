@@ -1,0 +1,62 @@
+/* Corporate: calm, dense, trustworthy. Inter, crisp 1px lines, small radii, one confident blue. */
+[data-style='corporate'] {
+  --ui-bg: #ffffff;
+  --ui-surface: #f6f8fb;
+  --ui-surface-2: #edf0f5;
+  --ui-raised: #ffffff;
+  --ui-raised-border: #dde2ea;
+  --ui-field-bg: #ffffff;
+  --ui-field-border: #ccd3de;
+  --ui-text: #0f172a;
+  --ui-text-muted: #5a6478;
+  --ui-border: #dde2ea;
+  --ui-accent: #0b5cff;
+  --ui-accent-hover: #0047d6;
+  --ui-accent-text: #ffffff;
+  --ui-accent-soft: #e8f0ff;
+  --ui-danger: #d92d20;
+  --ui-success: #079455;
+  --ui-warning: #dc6803;
+  --ui-focus: rgb(11 92 255 / 0.3);
+  --ui-overlay: rgb(15 23 42 / 0.5);
+  --ui-radius-sm: 4px;
+  --ui-radius-md: 6px;
+  --ui-radius-lg: 10px;
+  --ui-shadow-sm: 0 1px 2px rgb(16 24 40 / 0.06);
+  --ui-shadow-md: 0 4px 8px -2px rgb(16 24 40 / 0.1), 0 2px 4px -2px rgb(16 24 40 / 0.06);
+  --ui-shadow-lg: 0 20px 24px -4px rgb(16 24 40 / 0.1), 0 8px 8px -4px rgb(16 24 40 / 0.04);
+  --ui-font: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --ui-font-size: 14px;
+  --ui-weight-strong: 600;
+  --ui-heading-weight: 650;
+  --ui-heading-tracking: -0.015em;
+  --ui-duration: 150ms;
+  --ui-press-scale: 1;
+  --ui-chart-1: #0b5cff;
+  --ui-chart-2: #14b8a6;
+  --ui-chart-3: #7c3aed;
+  --ui-chart-4: #f59e0b;
+  --ui-chart-5: #64748b;
+  --ui-chart-6: #ec4899;
+}
+[data-style='corporate'][data-theme='dark'] {
+  --ui-bg: #0d1117;
+  --ui-surface: #151b23;
+  --ui-surface-2: #1c232d;
+  --ui-raised: #151b23;
+  --ui-raised-border: #2d3540;
+  --ui-field-bg: #0d1117;
+  --ui-field-border: #3a4350;
+  --ui-text: #e6edf3;
+  --ui-text-muted: #8b96a5;
+  --ui-border: #2d3540;
+  --ui-accent: #4c8dff;
+  --ui-accent-hover: #74a7ff;
+  --ui-accent-text: #ffffff;
+  --ui-accent-soft: rgb(76 141 255 / 0.15);
+  --ui-overlay: rgb(0 0 0 / 0.6);
+  --ui-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+  --ui-shadow-md: 0 4px 10px rgb(0 0 0 / 0.45);
+  --ui-shadow-lg: 0 20px 30px rgb(0 0 0 / 0.5);
+  --ui-chart-1: #4c8dff;
+}

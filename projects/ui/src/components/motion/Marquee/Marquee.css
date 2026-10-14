@@ -1,0 +1,81 @@
+.ui-marquee {
+  display: flex;
+  gap: var(--_gap);
+  width: 100%;
+  overflow: hidden;
+  user-select: none;
+}
+.ui-marquee--fade { mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+.ui-marquee__group {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-around;
+  gap: var(--_gap);
+  min-width: 100%;
+  animation: ui-marquee-x var(--_dur) linear infinite;
+}
+.ui-marquee--reverse .ui-marquee__group { animation-direction: reverse; }
+.ui-marquee--pausable:hover .ui-marquee__group { animation-play-state: paused; }
+@keyframes ui-marquee-x { to { transform: translateX(calc(-100% - var(--_gap))); } }
+
+.ui-marquee--vertical { flex-direction: column; height: 100%; }
+.ui-marquee--vertical.ui-marquee--fade { mask-image: linear-gradient(180deg, transparent, #000 12%, #000 88%, transparent); }
+.ui-marquee--vertical .ui-marquee__group { flex-direction: column; min-width: 0; min-height: 100%; animation-name: ui-marquee-y; }
+@keyframes ui-marquee-y { to { transform: translateY(calc(-100% - var(--_gap))); } }
+
+/* Reduced motion: a normal scroller the user controls */
+.ui-marquee.is-static { overflow: auto; mask-image: none; scrollbar-width: thin; }
+.ui-marquee.is-static .ui-marquee__group { animation: none; justify-content: flex-start; padding-bottom: 6px; }
+
+/* Ready-made item looks for stories and quick use */
+.ui-marquee__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  font-family: var(--ui-font-display);
+  font-weight: var(--ui-heading-weight);
+  letter-spacing: var(--ui-heading-tracking);
+  text-transform: var(--ui-heading-transform);
+  color: var(--ui-text-muted);
+}
+.ui-marquee__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: var(--ui-border-width) solid var(--ui-raised-border);
+  border-radius: var(--ui-radius-full);
+  background: var(--ui-raised);
+  box-shadow: var(--ui-shadow-sm);
+  white-space: nowrap;
+  font-weight: var(--ui-weight-strong);
+}
+
+/* ---- Style overrides ---- */
+[data-style='glass'] .ui-marquee__pill { backdrop-filter: blur(var(--ui-blur)); }
+[data-style='soft'] .ui-marquee__pill { border: 0; margin-block: 10px; }
+:is([data-style='brutalist'], [data-style='mono']) .ui-marquee__pill { border-color: var(--ui-border); border-radius: 0; }
+[data-style='brutalist'] .ui-marquee__item { color: var(--ui-text); font-size: 1.15em; }
+[data-style='brutalist'] .ui-marquee__group { animation-timing-function: linear; }
+[data-style='playful'] .ui-marquee__pill { border-color: var(--ui-border); }
+[data-style='playful'] .ui-marquee__pill:nth-child(3n + 1) { background: var(--ui-accent-soft); }
+[data-style='playful'] .ui-marquee__pill:nth-child(3n + 2) { background: color-mix(in oklab, var(--ui-chart-4) 25%, var(--ui-raised)); }
+[data-style='playful'] .ui-marquee__pill:nth-child(3n) { background: color-mix(in oklab, var(--ui-chart-3) 25%, var(--ui-raised)); }
+
+/* Extra: every item is neon gradient text, glowing pills, and hovering hits the turbo (see JSX) */
+[data-style='extra'] .ui-marquee__item {
+  background: var(--ui-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 10px rgb(255 60 172 / 0.35));
+}
+[data-style='extra'] .ui-marquee__item svg { color: var(--ui-accent); }
+[data-style='extra'] .ui-marquee__pill {
+  border: 1px solid transparent;
+  background: linear-gradient(var(--ui-bg), var(--ui-bg)) padding-box, var(--ui-gradient) border-box;
+  box-shadow: var(--ui-glow);
+}
+[data-style='extra'] .ui-marquee:hover { filter: saturate(1.4); }

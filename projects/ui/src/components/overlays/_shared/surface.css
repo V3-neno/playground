@@ -1,0 +1,79 @@
+/*
+ * The floating "raised" panel shared by Modal, Drawer, Popover, Toast and Command palette.
+ * Elements using it must be positioned (relative / absolute / fixed) themselves.
+ */
+.ui-ov-surface {
+  background: var(--ui-raised);
+  color: var(--ui-text);
+  border: var(--ui-border-width) solid var(--ui-raised-border);
+  border-radius: var(--ui-radius-lg);
+  box-shadow: var(--ui-shadow-lg);
+  backdrop-filter: blur(var(--ui-blur));
+  -webkit-backdrop-filter: blur(var(--ui-blur));
+}
+
+.ui-ov-close {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--ui-radius-sm);
+  background: transparent;
+  color: var(--ui-text-muted);
+  cursor: pointer;
+  transition: background var(--ui-duration-fast) var(--ui-ease), color var(--ui-duration-fast) var(--ui-ease), transform var(--ui-duration) var(--ui-ease-spring);
+}
+.ui-ov-close:hover { background: var(--ui-accent-soft); color: var(--ui-text); }
+.ui-ov-close:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ui-focus); }
+
+.ui-ov-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--ui-overlay);
+  opacity: 0;
+  transition: opacity var(--ui-duration) var(--ui-ease);
+}
+[data-state='open'] > .ui-ov-backdrop { opacity: 1; }
+
+/* ---- Style overrides ---- */
+[data-style='glass'] .ui-ov-backdrop { backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+[data-style='soft'] .ui-ov-backdrop { backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+[data-style='brutalist'] .ui-ov-close,
+[data-style='mono'] .ui-ov-close { border: var(--ui-border-width) solid var(--ui-border); color: var(--ui-text); border-radius: 0; }
+[data-style='brutalist'] .ui-ov-close:hover { background: var(--ui-accent); }
+[data-style='brutalist'] .ui-ov-backdrop {
+  background: repeating-linear-gradient(45deg, var(--ui-overlay) 0 12px, transparent 12px 24px), var(--ui-overlay);
+}
+[data-style='playful'] .ui-ov-close { border-radius: var(--ui-radius-full); }
+[data-style='playful'] .ui-ov-close:hover { transform: rotate(90deg); }
+
+/* Extra: a rotating rainbow rim with a neon glow, and a close button that spins away */
+[data-style='extra'] .ui-ov-surface {
+  border-color: transparent;
+  box-shadow: var(--ui-shadow-lg), var(--ui-glow);
+}
+[data-style='extra'] .ui-ov-surface::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: 0;
+  padding: 2px;
+  border-radius: inherit;
+  background: var(--ui-gradient);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  pointer-events: none;
+}
+[data-style='extra'] .ui-ov-close:hover { transform: rotate(180deg) scale(1.15); color: var(--ui-accent); }
+[data-style='extra'] .ui-ov-backdrop {
+  background:
+    radial-gradient(circle at 30% 20%, rgb(255 60 172 / 0.25), transparent 50%),
+    radial-gradient(circle at 70% 80%, rgb(0 229 199 / 0.2), transparent 50%),
+    var(--ui-overlay);
+  backdrop-filter: blur(4px) saturate(1.4);
+  -webkit-backdrop-filter: blur(4px) saturate(1.4);
+}

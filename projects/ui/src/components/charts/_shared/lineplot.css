@@ -1,0 +1,50 @@
+/* Line + area marks (used by Line chart and Area chart) */
+.ui-lineplot__reveal { transition: width 1.1s var(--ui-ease); }
+.ui-lineplot__line {
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: d var(--ui-duration-slow) var(--ui-ease), opacity var(--ui-duration-fast) var(--ui-ease), stroke-width var(--ui-duration-fast) var(--ui-ease);
+}
+.ui-lineplot__area { transition: d var(--ui-duration-slow) var(--ui-ease), opacity var(--ui-duration-fast) var(--ui-ease); }
+.ui-lineplot__area[data-stacked] { fill-opacity: 0.88; stroke: var(--ui-bg); stroke-width: 1; }
+.ui-lineplot__dot { transition: cx var(--ui-duration-slow) var(--ui-ease), cy var(--ui-duration-slow) var(--ui-ease); }
+svg[data-hovering] .ui-lineplot__line:not([data-active]),
+svg[data-hovering] .ui-lineplot__area:not([data-active]) { opacity: 0.25; }
+svg[data-hovering] .ui-lineplot__line[data-active] { stroke-width: 2.5; }
+.ui-lineplot__end { transition: opacity var(--ui-duration) var(--ui-ease) 0.9s; }
+.ui-lineplot__end text { fill: var(--ui-text-muted); font-size: 11.5px; }
+.ui-lineplot__comets circle { filter: drop-shadow(0 0 4px currentColor) drop-shadow(0 0 10px currentColor); pointer-events: none; }
+
+/* ---- Style overrides ---- */
+[data-style='glass'] .ui-lineplot__line { stroke-width: 2.5; filter: drop-shadow(0 4px 8px rgb(31 38 135 / 0.25)); }
+[data-style='glass'] .ui-lineplot__area[data-stacked] { stroke: rgb(255 255 255 / 0.7); fill-opacity: 0.72; }
+
+[data-style='soft'] .ui-lineplot__line { stroke-width: 3.5; filter: drop-shadow(2px 3px 2px #b8bfcc); }
+[data-style='soft'][data-theme='dark'] .ui-lineplot__line { filter: drop-shadow(2px 3px 2px #1a1c21); }
+[data-style='soft'] .ui-lineplot__area[data-stacked] { stroke: var(--ui-bg); stroke-width: 2; }
+
+[data-style='brutalist'] .ui-lineplot__line { stroke-width: 4; stroke-linecap: square; stroke-linejoin: miter; }
+[data-style='brutalist'] .ui-lineplot__area[data-stacked] { stroke: var(--ui-border); stroke-width: 2.5; fill-opacity: 1; }
+[data-style='brutalist'] .ui-lineplot__area:not([data-stacked]) { stroke: none; }
+[data-style='brutalist'] .ui-lineplot__dot,
+[data-style='brutalist'] .ui-lineplot__focus { stroke: var(--ui-border); stroke-width: 2.5; }
+[data-style='brutalist'] .ui-lineplot__end text { fill: var(--ui-text); font-weight: 800; text-transform: uppercase; font-size: 10.5px; }
+
+[data-style='mono'] .ui-lineplot__line { stroke-width: 2; stroke-linecap: butt; }
+[data-style='mono'] .ui-lineplot__area { stroke: var(--ui-text); stroke-width: 1; fill-opacity: 1; }
+[data-style='mono'] .ui-lineplot__reveal { transition-timing-function: steps(8, end); }
+[data-style='mono'] .ui-lineplot__end text { fill: var(--ui-text); }
+
+[data-style='playful'] .ui-lineplot__line { stroke-width: 4; }
+[data-style='playful'] .ui-lineplot__dot { r: 5; stroke: var(--ui-border); stroke-width: 2; }
+[data-style='playful'] .ui-lineplot__focus { r: 7; stroke: var(--ui-border); stroke-width: 2.5; animation: ui-lineplot-pop 0.35s var(--ui-ease-spring); }
+[data-style='playful'] .ui-lineplot__area[data-stacked] { stroke: var(--ui-border); stroke-width: 2; fill-opacity: 1; }
+[data-style='playful'] .ui-lineplot__end text { fill: var(--ui-text); font-weight: 800; }
+@keyframes ui-lineplot-pop { from { r: 0; } }
+
+[data-style='extra'] .ui-lineplot__line { stroke-width: 2.5; filter: drop-shadow(0 0 4px currentColor) drop-shadow(0 0 12px currentColor); }
+[data-style='extra'] .ui-lineplot__area[data-stacked] { stroke: none; filter: drop-shadow(0 -2px 8px currentColor); fill-opacity: 0.8; }
+[data-style='extra'] .ui-lineplot__focus { filter: drop-shadow(0 0 8px currentColor); animation: ui-lineplot-pulse 1.2s ease-in-out infinite; }
+[data-style='extra'] .ui-lineplot__end text { fill: var(--ui-text); font-weight: 700; }
+@keyframes ui-lineplot-pulse { 50% { r: 7.5; } }

@@ -4,12 +4,13 @@ import { Button } from './Button'
 export default {
   title: 'Button',
   category: 'Actions',
-  status: 'draft', // draft | ready
-  description: 'Reference component for the workshop. Styled only through --ui-* tokens, so it follows the style switcher.',
+  status: 'ready', // draft | ready
+  description: 'Reference component: tokens for everything, small per-style overrides at the bottom of the CSS, and confetti + a magnetic hover in the Extra style.',
   controls: {
     children: { type: 'text', default: 'Get started' },
     variant: { type: 'select', options: ['solid', 'outline', 'ghost', 'danger'], default: 'solid' },
     size: { type: 'radio', options: ['sm', 'md', 'lg'], default: 'md' },
+    icon: { type: 'select', options: ['', 'plus', 'arrow-right', 'download', 'sparkles', 'heart'], default: '' },
     loading: { type: 'boolean', default: false },
     disabled: { type: 'boolean', default: false },
   },
@@ -32,6 +33,14 @@ export const Sizes = () => (
     <Button size="sm">Small</Button>
     <Button size="md">Medium</Button>
     <Button size="lg">Large</Button>
+  </div>
+)
+
+export const WithIcons = () => (
+  <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+    <Button icon="plus">New project</Button>
+    <Button variant="outline" iconRight="arrow-right">Continue</Button>
+    <Button variant="ghost" icon="download">Export</Button>
   </div>
 )
 

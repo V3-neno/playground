@@ -1,0 +1,178 @@
+/* The nav is its own container so it can switch to the compact layout when squeezed. */
+.ui-pagination {
+  container: ui-pagination / inline-size;
+  width: 100%;
+}
+.ui-pagination__inner {
+  --_s: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.ui-pagination--sm .ui-pagination__inner { --_s: 30px; font-size: 0.875em; }
+.ui-pagination--lg .ui-pagination__inner { --_s: 44px; font-size: 1.0625em; }
+
+.ui-pagination__pages {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ui-pagination__btn {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: var(--_s);
+  height: var(--_s);
+  padding: 0 8px;
+  border: var(--ui-border-width) solid transparent;
+  border-radius: var(--ui-radius-sm);
+  background: none;
+  color: var(--ui-text);
+  font: inherit;
+  font-weight: var(--ui-weight-strong);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition:
+    color var(--ui-duration-fast) var(--ui-ease),
+    background var(--ui-duration-fast) var(--ui-ease),
+    transform var(--ui-duration-fast) var(--ui-ease);
+}
+.ui-pagination__btn:hover:not(:disabled):not([aria-current]) { background: var(--ui-accent-soft); transform: translateY(var(--ui-hover-lift)); }
+.ui-pagination__btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ui-focus); }
+.ui-pagination__btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.ui-pagination__page[aria-current='page'] { color: var(--ui-accent-text); }
+.ui-pagination__arrow { color: var(--ui-text-muted); }
+.ui-pagination__arrow:hover:not(:disabled) { color: var(--ui-text); }
+
+.ui-pagination__gap {
+  display: inline-grid;
+  place-items: center;
+  min-width: calc(var(--_s) * 0.7);
+  color: var(--ui-text-muted);
+  user-select: none;
+}
+
+.ui-pagination__indicator {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  left: 0;
+  width: var(--ind-w, 0);
+  height: var(--ind-h, 0);
+  opacity: var(--ind-o, 0);
+  transform: translate(var(--ind-x, 0), var(--ind-y, 0));
+  border-radius: var(--ui-radius-sm);
+  background: var(--ui-accent);
+  box-shadow: var(--ui-shadow-sm);
+  pointer-events: none;
+}
+.ui-pagination__pages[data-ready] .ui-pagination__indicator {
+  transition: transform var(--ui-duration) var(--ui-ease), width var(--ui-duration) var(--ui-ease);
+}
+
+/* outline: every page is a bordered box */
+.ui-pagination--outline .ui-pagination__btn { border-color: var(--ui-border); background: var(--ui-raised); }
+.ui-pagination--outline .ui-pagination__page[aria-current='page'] { border-color: transparent; background: transparent; }
+
+/* simple / narrow: arrows + "Page 3 of 12" */
+.ui-pagination__status { display: none; padding: 0 10px; color: var(--ui-text-muted); white-space: nowrap; }
+.ui-pagination__status strong { color: var(--ui-text); font-variant-numeric: tabular-nums; }
+.ui-pagination--simple .ui-pagination__pages { display: none; }
+.ui-pagination--simple .ui-pagination__status { display: inline; }
+.ui-pagination--simple .ui-pagination__arrow { border-color: var(--ui-border); background: var(--ui-raised); }
+@container ui-pagination (max-width: 420px) {
+  .ui-pagination__pages { display: none; }
+  .ui-pagination__status { display: inline; }
+  .ui-pagination__label { display: none; }
+  .ui-pagination__arrow { border-color: var(--ui-border); background: var(--ui-raised); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-pagination__pages[data-ready] .ui-pagination__indicator { transition: none; }
+}
+
+/* ---- Style overrides ---- */
+
+[data-style='glass'] .ui-pagination__inner {
+  width: fit-content;
+  margin: 0 auto;
+  padding: 5px;
+  border: 1px solid var(--ui-raised-border);
+  border-radius: var(--ui-radius-lg);
+  background: var(--ui-raised);
+  backdrop-filter: blur(var(--ui-blur));
+  box-shadow: var(--ui-shadow-md);
+}
+[data-style='glass'] .ui-pagination__indicator { background: var(--ui-gradient); box-shadow: var(--ui-glow); border-radius: var(--ui-radius-md); }
+[data-style='glass'] .ui-pagination__btn { border-radius: var(--ui-radius-md); }
+[data-style='glass'] .ui-pagination--outline .ui-pagination__btn { background: transparent; border-color: transparent; }
+
+[data-style='soft'] .ui-pagination__btn:not(.ui-pagination__page[aria-current]) { box-shadow: var(--ui-shadow-sm); background: var(--ui-bg); }
+[data-style='soft'] .ui-pagination__btn:active:not(:disabled) { box-shadow: var(--ui-shadow-inset); }
+[data-style='soft'] .ui-pagination__btn:hover:not(:disabled):not([aria-current]) { background: var(--ui-bg); }
+[data-style='soft'] .ui-pagination__pages { gap: 10px; }
+[data-style='soft'] .ui-pagination__inner { gap: 12px; }
+[data-style='soft'] .ui-pagination__indicator { background: var(--ui-gradient); box-shadow: var(--ui-shadow-sm); }
+
+:is([data-style='brutalist'], [data-style='mono'], [data-style='playful']) .ui-pagination__btn {
+  border-color: var(--ui-border);
+  background: var(--ui-raised);
+  box-shadow: var(--ui-shadow-sm);
+}
+:is([data-style='brutalist'], [data-style='mono'], [data-style='playful']) .ui-pagination__page[aria-current='page'] { background: transparent; box-shadow: none; }
+:is([data-style='brutalist'], [data-style='mono'], [data-style='playful']) .ui-pagination__indicator {
+  border: var(--ui-border-width) solid var(--ui-border);
+  box-shadow: var(--ui-shadow-md);
+}
+:is([data-style='brutalist'], [data-style='mono'], [data-style='playful']) .ui-pagination__btn:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: none; }
+:is([data-style='brutalist'], [data-style='mono'], [data-style='playful']) .ui-pagination__pages { gap: 8px; }
+[data-style='brutalist'] .ui-pagination__page[aria-current='page'] { color: var(--ui-accent-text); }
+[data-style='mono'] .ui-pagination__page[aria-current='page'] { color: var(--ui-accent-text); }
+[data-style='playful'] .ui-pagination__btn,
+[data-style='playful'] .ui-pagination__indicator { border-radius: var(--ui-radius-full); }
+[data-style='playful'] .ui-pagination__pages[data-ready] .ui-pagination__indicator { transition-timing-function: var(--ui-ease-spring); }
+[data-style='playful'] .ui-pagination__btn:hover:not(:disabled):not([aria-current]) { transform: translateY(var(--ui-hover-lift)) rotate(-4deg); }
+
+[data-style='corporate'] .ui-pagination--default .ui-pagination__inner { gap: 2px; }
+
+/* Extra: a glowing gradient orb that springs (and squishes) to the active page; pages hop on hover; reaching the last page throws confetti */
+[data-style='extra'] .ui-pagination__indicator {
+  border-radius: var(--ui-radius-full);
+  background: var(--ui-gradient);
+  box-shadow: var(--ui-glow);
+}
+[data-style='extra'] .ui-pagination__btn { border-radius: var(--ui-radius-full); }
+[data-style='extra'] .ui-pagination__page[aria-current='page'] { color: #fff; }
+[data-style='extra'] .ui-pagination__pages[data-ready] .ui-pagination__indicator {
+  transition: transform 620ms var(--ui-ease-spring), width 400ms var(--ui-ease);
+}
+[data-style='extra'] .ui-pagination__pages[data-moved][data-flip='0'] .ui-pagination__indicator { animation: ui-pagination-squish-a 620ms var(--ui-ease); }
+[data-style='extra'] .ui-pagination__pages[data-moved][data-flip='1'] .ui-pagination__indicator { animation: ui-pagination-squish-b 620ms var(--ui-ease); }
+@keyframes ui-pagination-squish-a { 30% { scale: 1.35 0.7; } 60% { scale: 0.9 1.15; } }
+@keyframes ui-pagination-squish-b { 30% { scale: 1.35 0.7; } 60% { scale: 0.9 1.15; } }
+[data-style='extra'] .ui-pagination__page:hover:not([aria-current]) { animation: ui-pagination-hop 0.5s var(--ui-ease-spring); background: transparent; }
+@keyframes ui-pagination-hop { 40% { transform: translateY(-7px) scale(1.12); } }
+[data-style='extra'] .ui-pagination__arrow {
+  border: 2px solid transparent;
+  background: linear-gradient(var(--ui-bg), var(--ui-bg)) padding-box, var(--ui-gradient) border-box;
+  border-radius: var(--ui-radius-full);
+  color: var(--ui-text);
+}
+[data-style='extra'] .ui-pagination__arrow:hover:not(:disabled) { box-shadow: var(--ui-glow); }
+[data-style='extra'] .ui-pagination__status strong {
+  background: var(--ui-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-size: 1.15em;
+}

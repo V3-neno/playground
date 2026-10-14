@@ -1,0 +1,70 @@
+/* Glass: frosted translucent panels floating over a soft aurora. Raised surfaces blur what's behind them. */
+[data-style='glass'] {
+  --ui-bg: #eef0fb;
+  --ui-surface: rgb(255 255 255 / 0.38);
+  --ui-surface-2: rgb(255 255 255 / 0.55);
+  --ui-raised: rgb(255 255 255 / 0.5);
+  --ui-raised-border: rgb(255 255 255 / 0.75);
+  --ui-blur: 18px;
+  --ui-field-bg: rgb(255 255 255 / 0.5);
+  --ui-field-border: rgb(255 255 255 / 0.85);
+  --ui-text: #1d1f3d;
+  --ui-text-muted: #5d6187;
+  --ui-border: rgb(29 31 61 / 0.12);
+  --ui-accent: #5b5bf6;
+  --ui-accent-hover: #4646e8;
+  --ui-accent-text: #ffffff;
+  --ui-accent-soft: rgb(91 91 246 / 0.14);
+  --ui-overlay: rgb(30 30 70 / 0.25);
+  --ui-gradient: linear-gradient(135deg, #6d6bff, #9b6bff 55%, #ff7ac6);
+  --ui-glow: 0 6px 24px rgb(109 107 255 / 0.35);
+  --ui-radius-sm: 10px;
+  --ui-radius-md: 14px;
+  --ui-radius-lg: 22px;
+  --ui-shadow-sm: 0 2px 8px rgb(31 38 135 / 0.08);
+  --ui-shadow-md: 0 8px 32px rgb(31 38 135 / 0.14);
+  --ui-shadow-lg: 0 20px 60px rgb(31 38 135 / 0.2);
+  --ui-font: 'Inter', system-ui, sans-serif;
+  --ui-heading-weight: 650;
+  --ui-heading-tracking: -0.02em;
+  --ui-chart-1: #6d6bff;
+  --ui-chart-2: #3cc8f0;
+  --ui-chart-3: #ff7ac6;
+  --ui-chart-4: #ffb86b;
+  --ui-chart-5: #50e3a4;
+  --ui-chart-6: #b07bff;
+}
+[data-style='glass'][data-theme='dark'] {
+  --ui-bg: #0a0c1d;
+  --ui-surface: rgb(255 255 255 / 0.06);
+  --ui-surface-2: rgb(255 255 255 / 0.1);
+  --ui-raised: rgb(255 255 255 / 0.08);
+  --ui-raised-border: rgb(255 255 255 / 0.16);
+  --ui-field-bg: rgb(255 255 255 / 0.06);
+  --ui-field-border: rgb(255 255 255 / 0.16);
+  --ui-text: #f0f2ff;
+  --ui-text-muted: #a3a9d4;
+  --ui-border: rgb(255 255 255 / 0.12);
+  --ui-accent: #8c9bff;
+  --ui-accent-hover: #a9b4ff;
+  --ui-accent-text: #0a0c1d;
+  --ui-accent-soft: rgb(140 155 255 / 0.16);
+  --ui-overlay: rgb(0 0 10 / 0.45);
+  --ui-shadow-sm: 0 2px 8px rgb(0 0 0 / 0.3);
+  --ui-shadow-md: 0 8px 32px rgb(0 0 0 / 0.4);
+  --ui-shadow-lg: 0 20px 60px rgb(0 0 0 / 0.5);
+}
+.ui-root[data-style='glass'] {
+  background:
+    radial-gradient(at 12% 18%, rgb(167 151 255 / 0.55) 0, transparent 45%),
+    radial-gradient(at 88% 8%, rgb(120 214 255 / 0.5) 0, transparent 42%),
+    radial-gradient(at 72% 92%, rgb(255 160 214 / 0.5) 0, transparent 48%),
+    var(--ui-bg);
+}
+.ui-root[data-style='glass'][data-theme='dark'] {
+  background:
+    radial-gradient(at 12% 18%, rgb(98 70 255 / 0.45) 0, transparent 45%),
+    radial-gradient(at 88% 8%, rgb(0 170 255 / 0.3) 0, transparent 42%),
+    radial-gradient(at 72% 92%, rgb(255 60 170 / 0.3) 0, transparent 48%),
+    var(--ui-bg);
+}

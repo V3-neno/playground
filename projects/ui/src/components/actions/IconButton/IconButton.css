@@ -1,0 +1,106 @@
+.ui-icon-button {
+  --_s: 38px;
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: var(--_s);
+  height: var(--_s);
+  padding: 0;
+  border: var(--ui-border-width) solid transparent;
+  border-radius: var(--ui-radius-md);
+  background: transparent;
+  color: var(--ui-text);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    background var(--ui-duration-fast) var(--ui-ease),
+    border-color var(--ui-duration-fast) var(--ui-ease),
+    box-shadow var(--ui-duration-fast) var(--ui-ease),
+    color var(--ui-duration-fast) var(--ui-ease),
+    transform var(--ui-duration-fast) var(--ui-ease);
+}
+.ui-icon-button:hover:not(:disabled) { transform: translateY(var(--ui-hover-lift)); }
+.ui-icon-button:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ui-focus); }
+.ui-icon-button:active:not(:disabled) { transform: scale(var(--ui-press-scale)); }
+.ui-icon-button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.ui-icon-button--sm { --_s: 30px; border-radius: var(--ui-radius-sm); }
+.ui-icon-button--lg { --_s: 46px; }
+.ui-icon-button--round { border-radius: var(--ui-radius-full); }
+
+.ui-icon-button--solid { background: var(--ui-accent); color: var(--ui-accent-text); box-shadow: var(--ui-shadow-sm); }
+.ui-icon-button--solid:hover:not(:disabled) { background: var(--ui-accent-hover); box-shadow: var(--ui-shadow-sm), var(--ui-glow); }
+.ui-icon-button--outline { background: var(--ui-raised); border-color: var(--ui-border); }
+.ui-icon-button--outline:hover:not(:disabled) { background: var(--ui-surface); }
+.ui-icon-button--ghost { color: var(--ui-text-muted); }
+.ui-icon-button--ghost:hover:not(:disabled) { background: var(--ui-accent-soft); color: var(--ui-text); }
+
+.ui-icon-button__icon { display: grid; place-items: center; }
+
+.ui-icon-button__badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--ui-bg);
+  border-radius: var(--ui-radius-full);
+  background: var(--ui-danger);
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: var(--ui-weight-strong);
+  line-height: 1;
+  pointer-events: none;
+}
+.ui-icon-button__badge.is-dot { top: 3px; right: 3px; min-width: 10px; width: 10px; height: 10px; padding: 0; }
+
+/* ---- Style overrides ---- */
+
+[data-style='glass'] .ui-icon-button--outline { backdrop-filter: blur(var(--ui-blur)); border-color: var(--ui-raised-border); }
+[data-style='glass'] .ui-icon-button--solid { background: var(--ui-gradient); }
+
+[data-style='soft'] .ui-icon-button--outline,
+[data-style='soft'] .ui-icon-button--ghost { box-shadow: var(--ui-shadow-sm); color: var(--ui-text); }
+[data-style='soft'] .ui-icon-button--ghost:hover:not(:disabled) { background: transparent; color: var(--ui-accent); }
+[data-style='soft'] .ui-icon-button:active:not(:disabled) { box-shadow: var(--ui-shadow-inset); }
+[data-style='soft'] .ui-icon-button__badge { border-color: var(--ui-bg); }
+
+:is([data-style='brutalist'], [data-style='playful'], [data-style='mono']) :is(.ui-icon-button--solid, .ui-icon-button--outline) {
+  border-color: var(--ui-border);
+  box-shadow: var(--ui-shadow-sm);
+}
+:is([data-style='brutalist'], [data-style='playful'], [data-style='mono']) :is(.ui-icon-button--solid, .ui-icon-button--outline):hover:not(:disabled) { box-shadow: var(--ui-shadow-md); }
+:is([data-style='brutalist'], [data-style='playful'], [data-style='mono']) :is(.ui-icon-button--solid, .ui-icon-button--outline):active:not(:disabled) {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+[data-style='brutalist'] .ui-icon-button__badge,
+[data-style='mono'] .ui-icon-button__badge { border-color: var(--ui-border); border-radius: 0; }
+[data-style='brutalist'] .ui-icon-button--ghost:hover:not(:disabled) { background: var(--ui-accent); color: var(--ui-accent-text); }
+[data-style='playful'] .ui-icon-button { border-radius: var(--ui-radius-full); }
+[data-style='playful'] .ui-icon-button:hover:not(:disabled) .ui-icon-button__icon { animation: ui-icon-button-wiggle 0.5s var(--ui-ease); }
+@keyframes ui-icon-button-wiggle {
+  25% { transform: rotate(-12deg); }
+  60% { transform: rotate(10deg); }
+}
+
+/* Extra: gradient fill, neon glow on the glyph, and a spin-pop on every click */
+[data-style='extra'] .ui-icon-button--solid { background: var(--ui-gradient); box-shadow: var(--ui-glow); }
+[data-style='extra'] .ui-icon-button--outline {
+  border: 2px solid transparent;
+  background: linear-gradient(var(--ui-bg), var(--ui-bg)) padding-box, var(--ui-gradient) border-box;
+}
+[data-style='extra'] .ui-icon-button:hover:not(:disabled) .ui-icon-button__icon { filter: drop-shadow(0 0 6px var(--ui-accent)); }
+[data-style='extra'] .ui-icon-button--ghost:hover:not(:disabled) { color: var(--ui-accent); }
+[data-style='extra'] .ui-icon-button__icon[data-spin] { animation: ui-icon-button-pop 0.7s var(--ui-ease-spring); }
+[data-style='extra'] .ui-icon-button__badge { background: var(--ui-gradient); box-shadow: 0 0 10px rgb(255 60 172 / 0.7); animation: ui-icon-button-throb 1.6s ease-in-out infinite; }
+@keyframes ui-icon-button-pop {
+  0% { transform: scale(1) rotate(0); }
+  35% { transform: scale(1.4) rotate(-25deg); }
+  100% { transform: scale(1) rotate(360deg); }
+}
+@keyframes ui-icon-button-throb { 50% { transform: scale(1.18); } }

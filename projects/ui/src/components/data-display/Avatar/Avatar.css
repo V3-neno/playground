@@ -1,0 +1,91 @@
+.ui-avatar {
+  --_r: 50%;
+  position: relative;
+  display: inline-grid;
+  flex: none;
+  width: var(--_size);
+  height: var(--_size);
+  border-radius: var(--_r);
+  vertical-align: middle;
+}
+.ui-avatar--rounded { --_r: var(--ui-radius-md); }
+.ui-avatar--square { --_r: var(--ui-radius-sm); }
+
+.ui-avatar__inner {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: inherit;
+  background: var(--ui-accent-soft);
+  color: var(--ui-accent);
+  font-size: calc(var(--_size) * 0.38);
+  font-weight: var(--ui-weight-strong);
+  line-height: 1;
+  user-select: none;
+}
+.ui-avatar__inner img { width: 100%; height: 100%; object-fit: cover; }
+
+.ui-avatar--ring .ui-avatar__inner { box-shadow: 0 0 0 2px var(--ui-bg), 0 0 0 4px var(--ui-accent); }
+
+.ui-avatar__status {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: max(8px, calc(var(--_size) * 0.27));
+  height: max(8px, calc(var(--_size) * 0.27));
+  border: 2px solid var(--ui-bg);
+  border-radius: 50%;
+  background: var(--ui-text-muted);
+}
+.ui-avatar--square .ui-avatar__status,
+.ui-avatar--rounded .ui-avatar__status { right: -3px; bottom: -3px; }
+.ui-avatar__status.is-online { background: var(--ui-success); }
+.ui-avatar__status.is-away { background: var(--ui-warning); }
+.ui-avatar__status.is-busy { background: var(--ui-danger); }
+
+.ui-avatar-group { display: inline-flex; flex-direction: row; padding-left: calc(var(--_size) * 0.28); }
+.ui-avatar-group > .ui-avatar {
+  margin-left: calc(var(--_size) * -0.28);
+  transition: transform var(--ui-duration) var(--ui-ease);
+}
+.ui-avatar-group > .ui-avatar .ui-avatar__inner { box-shadow: 0 0 0 2px var(--ui-bg); }
+.ui-avatar-group > .ui-avatar:hover { transform: translateY(-3px); z-index: 1; }
+.ui-avatar--more .ui-avatar__inner { background: var(--ui-surface-2); color: var(--ui-text-muted); font-size: calc(var(--_size) * 0.32); }
+
+/* ---- Style overrides ---- */
+
+[data-style='glass'] .ui-avatar-group > .ui-avatar .ui-avatar__inner { box-shadow: 0 0 0 2px var(--ui-raised-border); }
+[data-style='glass'] .ui-avatar--more .ui-avatar__inner { background: var(--ui-raised); backdrop-filter: blur(var(--ui-blur)); }
+
+[data-style='soft'] .ui-avatar__inner { box-shadow: var(--ui-shadow-sm); border: 3px solid var(--ui-bg); }
+[data-style='soft'] .ui-avatar-group > .ui-avatar .ui-avatar__inner { box-shadow: var(--ui-shadow-sm); }
+[data-style='soft'] .ui-avatar__status { border-color: var(--ui-bg); box-shadow: var(--ui-shadow-sm); }
+
+:is([data-style='brutalist'], [data-style='mono'], [data-style='playful']) .ui-avatar__inner { border: var(--ui-border-width) solid var(--ui-border); }
+:is([data-style='brutalist'], [data-style='mono'], [data-style='playful']) .ui-avatar-group > .ui-avatar .ui-avatar__inner { box-shadow: none; }
+:is([data-style='brutalist'], [data-style='mono'], [data-style='playful']) .ui-avatar__status { border-color: var(--ui-border); }
+[data-style='brutalist'] .ui-avatar { box-shadow: 3px 3px 0 var(--ui-border); }
+[data-style='brutalist'] .ui-avatar__inner { color: var(--ui-text); }
+[data-style='brutalist'] .ui-avatar-group > .ui-avatar { box-shadow: none; }
+[data-style='brutalist'] .ui-avatar--ring .ui-avatar__inner { box-shadow: none; background: var(--ui-accent); }
+[data-style='playful'] .ui-avatar-group > .ui-avatar:hover { transform: translateY(-5px) rotate(-8deg); }
+[data-style='playful'] .ui-avatar--ring .ui-avatar__inner { box-shadow: 0 0 0 3px var(--ui-accent); }
+
+/* Extra: a spinning gradient halo; hovering throws sparkles (see Avatar.jsx) */
+[data-style='extra'] .ui-avatar--ring::before,
+[data-style='extra'] .ui-avatar-group > .ui-avatar::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  background: conic-gradient(from var(--ui-angle), #ff3cac, #a33bff, #2b86c5, #00e5c7, #ffd23f, #ff3cac);
+  filter: drop-shadow(0 0 6px rgb(255 60 172 / 0.55));
+}
+[data-style='extra'] .ui-avatar-group > .ui-avatar::before { inset: -2px; filter: none; opacity: 0.85; }
+[data-style='extra'] .ui-avatar--ring .ui-avatar__inner,
+[data-style='extra'] .ui-avatar-group > .ui-avatar .ui-avatar__inner { position: relative; box-shadow: 0 0 0 2px var(--ui-bg); }
+[data-style='extra'] .ui-avatar__inner { transition: transform var(--ui-duration) var(--ui-ease-spring); }
+[data-style='extra'] .ui-avatar:hover .ui-avatar__inner { transform: scale(1.08) rotate(-4deg); }
+[data-style='extra'] .ui-avatar__status { z-index: 1; }
+[data-style='extra'] .ui-avatar__status.is-online { box-shadow: 0 0 8px var(--ui-success); animation: ui-avatar-blink 2s ease-in-out infinite; }
+@keyframes ui-avatar-blink { 50% { box-shadow: 0 0 2px var(--ui-success); } }

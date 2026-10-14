@@ -21,6 +21,10 @@
   --ui-font: ui-monospace, 'Cascadia Code', Consolas, monospace;
   --ui-font-size: 14px;
   --ui-weight-strong: 700;
+  --ui-heading-transform: uppercase;
+  --ui-heading-tracking: 0.02em;
+  --ui-raised: #f4f1ea;
+  --ui-field-bg: #fbfaf6;
   --ui-chart-1: #111111;
   --ui-chart-2: #ff5a1f;
   --ui-chart-3: #2563eb;
@@ -39,6 +43,8 @@
   --ui-accent-hover: #ffffff;
   --ui-accent-text: #0e0e0e;
   --ui-accent-soft: #222222;
+  --ui-raised: #0e0e0e;
+  --ui-field-bg: #141414;
   --ui-shadow-sm: 2px 2px 0 #f4f1ea;
   --ui-shadow-md: 4px 4px 0 #f4f1ea;
   --ui-shadow-lg: 6px 6px 0 #f4f1ea;

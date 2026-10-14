@@ -1,0 +1,106 @@
+.ui-badge {
+  --_c: var(--ui-accent);
+  --_on: var(--ui-accent-text);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding: 0 9px;
+  border: var(--ui-border-width) solid transparent;
+  border-radius: var(--ui-radius-full);
+  font-size: 12px;
+  font-weight: var(--ui-weight-strong);
+  line-height: 1;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.ui-badge--sm { height: 18px; padding: 0 7px; font-size: 11px; gap: 4px; }
+.ui-badge--lg { height: 28px; padding: 0 12px; font-size: 13px; }
+
+.ui-badge--accent { --_c: var(--ui-accent); --_on: var(--ui-accent-text); }
+.ui-badge--success { --_c: var(--ui-success); --_on: #fff; }
+.ui-badge--warning { --_c: var(--ui-warning); --_on: #fff; }
+.ui-badge--danger { --_c: var(--ui-danger); --_on: #fff; }
+.ui-badge--neutral { --_c: var(--ui-text-muted); --_on: var(--ui-bg); }
+
+.ui-badge--solid { background: var(--_c); color: var(--_on); }
+.ui-badge--soft { background: color-mix(in oklab, var(--_c) 15%, transparent); color: color-mix(in oklab, var(--_c) 80%, var(--ui-text)); }
+.ui-badge--outline { border-color: color-mix(in oklab, var(--_c) 55%, transparent); color: color-mix(in oklab, var(--_c) 85%, var(--ui-text)); }
+
+.ui-badge--count { min-width: 22px; justify-content: center; padding: 0 6px; font-variant-numeric: tabular-nums; }
+.ui-badge--sm.ui-badge--count { min-width: 18px; padding: 0 5px; }
+
+.ui-badge__dot { position: relative; width: 6px; height: 6px; border-radius: 50%; background: var(--_c); flex: none; }
+.ui-badge--solid .ui-badge__dot { background: currentColor; }
+.ui-badge__dot.is-pulsing::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  animation: ui-badge-pulse 1.6s var(--ui-ease) infinite;
+}
+@keyframes ui-badge-pulse { to { transform: scale(3); opacity: 0; } }
+
+.ui-badge__remove {
+  display: grid;
+  place-items: center;
+  width: 15px;
+  height: 15px;
+  margin-right: -4px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  opacity: 0.7;
+  cursor: pointer;
+}
+.ui-badge__remove:hover { opacity: 1; background: color-mix(in oklab, currentColor 15%, transparent); }
+.ui-badge__remove:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--ui-focus); opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) { .ui-badge__dot.is-pulsing::after { animation: none; } }
+
+/* ---- Style overrides ---- */
+
+[data-style='glass'] .ui-badge--soft,
+[data-style='glass'] .ui-badge--outline { backdrop-filter: blur(8px); background-color: color-mix(in oklab, var(--_c) 14%, rgb(255 255 255 / 0.25)); }
+[data-style='glass'][data-theme='dark'] .ui-badge--soft { background-color: color-mix(in oklab, var(--_c) 22%, transparent); }
+
+[data-style='soft'] .ui-badge { box-shadow: var(--ui-shadow-sm); }
+[data-style='soft'] .ui-badge--soft { background: var(--ui-surface); color: var(--_c); }
+[data-style='soft'] .ui-badge--outline { box-shadow: var(--ui-shadow-inset); border-color: transparent; color: var(--_c); }
+
+:is([data-style='brutalist'], [data-style='mono']) .ui-badge { border-color: var(--ui-border); border-width: 2px; }
+:is([data-style='brutalist'], [data-style='mono']) .ui-badge--soft { color: var(--ui-text); background: color-mix(in oklab, var(--_c) 35%, var(--ui-bg)); }
+[data-style='brutalist'] .ui-badge { text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 2px 2px 0 var(--ui-border); }
+[data-style='brutalist'] .ui-badge--accent.ui-badge--solid { color: #000; }
+
+[data-style='playful'] .ui-badge { border-color: var(--ui-border); box-shadow: 1px 2px 0 var(--ui-border); }
+[data-style='playful'] .ui-badge--soft { color: var(--ui-text); background: color-mix(in oklab, var(--_c) 30%, var(--ui-raised)); }
+[data-style='playful'] .ui-badge:hover { animation: ui-badge-wiggle 0.4s var(--ui-ease); }
+@keyframes ui-badge-wiggle { 25% { transform: rotate(-6deg); } 75% { transform: rotate(5deg); } }
+
+/* Extra: accent badges ride the rotating gradient with a shimmer sweep, and dots glow */
+[data-style='extra'] .ui-badge--accent.ui-badge--solid {
+  position: relative;
+  overflow: hidden;
+  background: var(--ui-gradient);
+  color: #fff;
+  box-shadow: 0 0 12px rgb(255 60 172 / 0.45);
+}
+[data-style='extra'] .ui-badge--accent.ui-badge--solid::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 35%, rgb(255 255 255 / 0.65) 50%, transparent 65%);
+  transform: translateX(-100%);
+  animation: ui-badge-shimmer 2.4s ease-in-out infinite;
+}
+[data-style='extra'] .ui-badge--accent.ui-badge--outline {
+  border: 1.5px solid transparent;
+  background: linear-gradient(var(--ui-bg), var(--ui-bg)) padding-box, var(--ui-gradient) border-box;
+}
+[data-style='extra'] .ui-badge__dot { box-shadow: 0 0 6px 1px var(--_c); }
+[data-style='extra'] .ui-badge:hover { transform: scale(1.08) rotate(-2deg); transition: transform var(--ui-duration) var(--ui-ease-spring); }
+@keyframes ui-badge-shimmer { 60%, 100% { transform: translateX(100%); } }

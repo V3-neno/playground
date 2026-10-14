@@ -1,0 +1,15 @@
+/* Line chart: marks live in charts/_shared/lineplot.css; this file only tunes the line-only variant. */
+.ui-line-chart .ui-lineplot__dot { r: 3.5; }
+
+/* ---- Style overrides ---- */
+/* Brutalist: chunkier markers to match the 4px lines */
+[data-style='brutalist'] .ui-line-chart .ui-lineplot__dot { r: 4.5; }
+/* Extra: the whole plot gets a faint scanline shimmer */
+[data-style='extra'] .ui-line-chart .ui-chart__plot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, transparent 0 3px, rgb(255 255 255 / 0.035) 3px 4px);
+  mix-blend-mode: overlay;
+}

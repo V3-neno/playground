@@ -1,0 +1,93 @@
+.ui-switch {
+  --_w: 42px;
+  --_h: 24px;
+  --_pad: 3px;
+  --_t: calc(var(--_h) - 2 * var(--_pad));
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 12px;
+  color: var(--ui-text);
+}
+.ui-switch--sm { --_w: 32px; --_h: 18px; --_pad: 2px; font-size: 0.875em; gap: 9px; }
+.ui-switch--lg { --_w: 56px; --_h: 32px; --_pad: 4px; font-size: 1.0625em; }
+.ui-switch--label-left { flex-direction: row-reverse; justify-content: flex-end; }
+.ui-switch[data-disabled] { opacity: 0.5; }
+
+.ui-switch__track {
+  position: relative;
+  flex: none;
+  width: var(--_w);
+  height: var(--_h);
+  margin-top: max(0px, calc((1.5em - var(--_h)) / 2));
+  padding: 0;
+  border: 0;
+  border-radius: var(--ui-radius-full);
+  background: var(--ui-surface-2);
+  box-shadow: inset 0 0 0 var(--ui-border-width) var(--ui-border), var(--ui-shadow-inset);
+  cursor: pointer;
+  transition: background var(--ui-duration) var(--ui-ease), box-shadow var(--ui-duration) var(--ui-ease);
+}
+.ui-switch__track:disabled { cursor: not-allowed; }
+.ui-switch__track[aria-checked='true'] { background: var(--ui-accent); box-shadow: none; }
+.ui-switch__track:focus-visible { outline: none; box-shadow: inset 0 0 0 var(--ui-border-width) var(--ui-border), 0 0 0 3px var(--ui-focus); }
+.ui-switch__track[aria-checked='true']:focus-visible { box-shadow: 0 0 0 3px var(--ui-focus); }
+
+.ui-switch__thumb {
+  position: absolute;
+  top: var(--_pad);
+  left: var(--_pad);
+  display: grid;
+  place-items: center;
+  width: var(--_t);
+  height: var(--_t);
+  border-radius: var(--ui-radius-full);
+  background: #fff;
+  color: var(--ui-text-muted);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+  transition:
+    left var(--ui-duration) var(--ui-ease),
+    width var(--ui-duration-fast) var(--ui-ease),
+    background var(--ui-duration) var(--ui-ease);
+}
+.ui-switch__track[aria-checked='true'] .ui-switch__thumb { left: calc(var(--_w) - var(--_t) - var(--_pad)); color: var(--ui-accent); }
+/* Squish: the thumb stretches while pressed, like iOS */
+.ui-switch__track:active:not(:disabled) .ui-switch__thumb { width: calc(var(--_t) * 1.3); }
+.ui-switch__track[aria-checked='true']:active:not(:disabled) .ui-switch__thumb { left: calc(var(--_w) - var(--_t) * 1.3 - var(--_pad)); }
+
+.ui-switch__text { display: flex; flex-direction: column; }
+.ui-switch__label { font-weight: 500; line-height: 1.5; cursor: pointer; }
+.ui-switch[data-disabled] .ui-switch__label { cursor: not-allowed; }
+.ui-switch__desc { font-size: 0.875em; color: var(--ui-text-muted); }
+
+/* ---- Style overrides ---- */
+[data-style='glass'] .ui-switch__track { background: var(--ui-surface-2); backdrop-filter: blur(8px); box-shadow: inset 0 0 0 1px var(--ui-raised-border); }
+[data-style='glass'] .ui-switch__track[aria-checked='true'] { background: var(--ui-gradient); }
+
+[data-style='soft'] .ui-switch__track { background: var(--ui-surface); box-shadow: var(--ui-shadow-inset); }
+[data-style='soft'] .ui-switch__track[aria-checked='true'] { background: var(--ui-gradient); box-shadow: var(--ui-shadow-inset); }
+[data-style='soft'] .ui-switch__thumb { background: var(--ui-bg); box-shadow: var(--ui-shadow-sm); }
+
+:is([data-style='brutalist'], [data-style='mono'], [data-style='playful']) .ui-switch__track { box-shadow: inset 0 0 0 var(--ui-border-width) var(--ui-border); background: var(--ui-raised); }
+:is([data-style='brutalist'], [data-style='mono'], [data-style='playful']) .ui-switch__track[aria-checked='true'] {
+  background: var(--ui-accent);
+  box-shadow: inset 0 0 0 var(--ui-border-width) var(--ui-border), var(--ui-shadow-sm);
+}
+:is([data-style='brutalist'], [data-style='mono'], [data-style='playful']) .ui-switch__thumb { background: var(--ui-text); color: var(--ui-bg); box-shadow: none; }
+:is([data-style='brutalist'], [data-style='mono']) .ui-switch__thumb { border-radius: 0; }
+/* On: a light square riding the accent track, so it never vanishes when accent = text (mono) */
+:is([data-style='brutalist'], [data-style='mono']) .ui-switch__track[aria-checked='true'] .ui-switch__thumb {
+  background: var(--ui-raised);
+  box-shadow: inset 0 0 0 var(--ui-border-width) var(--ui-border);
+}
+:is([data-style='brutalist'], [data-style='mono']) .ui-switch__track { border-radius: 0; }
+[data-style='brutalist'] .ui-switch__label { font-weight: 700; }
+[data-style='playful'] .ui-switch__thumb { background: #fff; border: 2px solid var(--ui-border); color: var(--ui-accent); }
+
+/* Extra: the track is a moving rainbow, the thumb glows, and turning on throws stars */
+[data-style='extra'] .ui-switch__track[aria-checked='true'] { background: var(--ui-gradient); box-shadow: var(--ui-glow); }
+[data-style='extra'] .ui-switch__thumb { transition: left var(--ui-duration-slow) var(--ui-ease-spring), width var(--ui-duration-fast) var(--ui-ease), transform var(--ui-duration-slow) var(--ui-ease-spring); }
+[data-style='extra'] .ui-switch__track[aria-checked='true'] .ui-switch__thumb {
+  transform: rotate(360deg);
+  box-shadow: 0 0 12px #fff, 0 0 20px rgb(255 60 172 / 0.8);
+  color: #ff3cac;
+}

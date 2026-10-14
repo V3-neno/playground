@@ -1,0 +1,45 @@
+.ui-reveal {
+  --_dur: var(--ui-duration-slow);
+  --_shift: 28px;
+  transition:
+    opacity var(--_dur) var(--ui-ease) var(--_delay),
+    transform var(--_dur) var(--ui-ease) var(--_delay),
+    filter var(--_dur) var(--ui-ease) var(--_delay),
+    clip-path var(--_dur) var(--ui-ease) var(--_delay);
+}
+.ui-reveal:not(.is-visible) { opacity: 0; }
+
+.ui-reveal--fade-up:not(.is-visible) { transform: translateY(var(--_shift)); }
+.ui-reveal--fade-down:not(.is-visible) { transform: translateY(calc(-1 * var(--_shift))); }
+.ui-reveal--slide-left:not(.is-visible) { transform: translateX(calc(2 * var(--_shift))); }
+.ui-reveal--slide-right:not(.is-visible) { transform: translateX(calc(-2 * var(--_shift))); }
+.ui-reveal--zoom:not(.is-visible) { transform: scale(0.88); }
+.ui-reveal--blur:not(.is-visible) { filter: blur(14px); transform: scale(1.04); }
+.ui-reveal--flip { transform-origin: 50% 0; }
+.ui-reveal--flip:not(.is-visible) { transform: perspective(700px) rotateX(-70deg); }
+.ui-reveal--warp { transition-timing-function: var(--ui-ease-spring); }
+.ui-reveal--warp:not(.is-visible) { transform: translateY(40px) scale(0.6) rotate(-8deg); filter: blur(16px) hue-rotate(160deg); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-reveal { transition: none; }
+}
+
+/* ---- Style overrides ---- */
+/* Brutalist and mono don't glide, they stamp: stepped timing, harder offsets */
+[data-style='brutalist'] .ui-reveal { transition-timing-function: steps(4, end); --_dur: 240ms; --_shift: 40px; }
+[data-style='mono'] .ui-reveal { transition-timing-function: steps(6, end); }
+/* Playful overshoots, with a little twist */
+[data-style='playful'] .ui-reveal { transition-timing-function: var(--ui-ease-spring); }
+[data-style='playful'] .ui-reveal--fade-up:not(.is-visible) { transform: translateY(var(--_shift)) rotate(-3deg) scale(0.95); }
+/* Soft drifts slowly up out of the material */
+[data-style='soft'] .ui-reveal { --_dur: 700ms; --_shift: 16px; }
+/* Corporate: subtle and quick */
+[data-style='corporate'] .ui-reveal { --_shift: 12px; --_dur: 360ms; }
+/* Glass: comes into focus */
+[data-style='glass'] .ui-reveal--fade-up:not(.is-visible) { filter: blur(8px); }
+/* Extra: a chromatic flash as each element lands */
+[data-style='extra'] .ui-reveal.is-visible { animation: ui-reveal-chroma 0.7s calc(var(--_delay) + var(--_dur) * 0.4) both; }
+@keyframes ui-reveal-chroma {
+  0% { filter: drop-shadow(-4px 0 rgb(255 60 172 / 0.7)) drop-shadow(4px 0 rgb(0 229 199 / 0.7)); }
+  100% { filter: none; }
+}

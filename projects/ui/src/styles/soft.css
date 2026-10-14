@@ -1,0 +1,61 @@
+/*
+ * Soft (neumorphic): everything is extruded from, or pressed into, the same material.
+ * Raised = --ui-shadow-* (light from top-left), sunken = --ui-shadow-inset. Borders mostly disappear.
+ */
+[data-style='soft'] {
+  --ui-bg: #e4e8f0;
+  --ui-surface: #e4e8f0;
+  --ui-surface-2: #dbe0e9;
+  --ui-raised: #e4e8f0;
+  --ui-raised-border: transparent;
+  --ui-field-bg: #e4e8f0;
+  --ui-field-border: transparent;
+  --ui-text: #3a4459;
+  --ui-text-muted: #7a8399;
+  --ui-border: rgb(163 177 198 / 0.45);
+  --ui-accent: #6d5dfc;
+  --ui-accent-hover: #5b4bec;
+  --ui-accent-text: #ffffff;
+  --ui-accent-soft: rgb(109 93 252 / 0.12);
+  --ui-overlay: rgb(228 232 240 / 0.7);
+  --ui-shadow-sm: 3px 3px 6px #c3c9d4, -3px -3px 6px #ffffff;
+  --ui-shadow-md: 7px 7px 14px #c0c6d1, -7px -7px 14px #ffffff;
+  --ui-shadow-lg: 14px 14px 28px #bcc2ce, -14px -14px 28px #ffffff;
+  --ui-shadow-inset: inset 3px 3px 7px #c3c9d4, inset -3px -3px 7px #ffffff;
+  --ui-gradient: linear-gradient(145deg, #7f70ff, #5b4bec);
+  --ui-glow: 0 6px 16px rgb(109 93 252 / 0.35);
+  --ui-radius-sm: 12px;
+  --ui-radius-md: 16px;
+  --ui-radius-lg: 26px;
+  --ui-border-width: 0px;
+  --ui-font: 'Nunito', system-ui, sans-serif;
+  --ui-weight-strong: 700;
+  --ui-heading-weight: 800;
+  --ui-duration: 260ms;
+  --ui-press-scale: 0.97;
+  --ui-chart-1: #6d5dfc;
+  --ui-chart-2: #4fb6e8;
+  --ui-chart-3: #5fd3a5;
+  --ui-chart-4: #f7b267;
+  --ui-chart-5: #f27aa0;
+  --ui-chart-6: #a495ff;
+}
+[data-style='soft'][data-theme='dark'] {
+  --ui-bg: #2a2e36;
+  --ui-surface: #2a2e36;
+  --ui-surface-2: #31353f;
+  --ui-raised: #2a2e36;
+  --ui-field-bg: #2a2e36;
+  --ui-text: #d9dde6;
+  --ui-text-muted: #8f97a8;
+  --ui-border: rgb(0 0 0 / 0.25);
+  --ui-accent: #8b7dff;
+  --ui-accent-hover: #a296ff;
+  --ui-accent-text: #ffffff;
+  --ui-accent-soft: rgb(139 125 255 / 0.16);
+  --ui-overlay: rgb(20 22 27 / 0.6);
+  --ui-shadow-sm: 3px 3px 6px #1f2228, -3px -3px 6px #353a44;
+  --ui-shadow-md: 6px 6px 12px #1e2127, -6px -6px 12px #363b45;
+  --ui-shadow-lg: 12px 12px 24px #1c1f24, -12px -12px 24px #383d48;
+  --ui-shadow-inset: inset 3px 3px 7px #1f2228, inset -3px -3px 7px #353a44;
+}

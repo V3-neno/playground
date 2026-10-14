@@ -1,0 +1,98 @@
+.ui-stat {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  overflow: hidden;
+}
+.ui-stat--card {
+  padding: 18px 20px;
+  border: var(--ui-border-width) solid var(--ui-raised-border);
+  border-radius: var(--ui-radius-lg);
+  background: var(--ui-raised);
+  box-shadow: var(--ui-shadow-sm);
+}
+.ui-stat--plain { padding: 4px 0; }
+
+.ui-stat__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.ui-stat__label { color: var(--ui-text-muted); font-size: 0.875em; font-weight: 500; }
+.ui-stat__icon { display: grid; place-items: center; width: 30px; height: 30px; border-radius: var(--ui-radius-sm); background: var(--ui-accent-soft); color: var(--ui-accent); }
+
+.ui-stat__value {
+  font-family: var(--ui-font-display);
+  font-size: 1.9em;
+  font-weight: var(--ui-heading-weight);
+  letter-spacing: var(--ui-heading-tracking);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ui-stat__delta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 0.8125em; }
+.ui-stat__delta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: var(--ui-radius-full);
+  font-weight: var(--ui-weight-strong);
+  font-variant-numeric: tabular-nums;
+}
+.ui-stat__delta.is-good .ui-stat__delta-chip { background: color-mix(in oklab, var(--ui-success) 15%, transparent); color: color-mix(in oklab, var(--ui-success) 85%, var(--ui-text)); }
+.ui-stat__delta.is-bad .ui-stat__delta-chip { background: color-mix(in oklab, var(--ui-danger) 14%, transparent); color: color-mix(in oklab, var(--ui-danger) 85%, var(--ui-text)); }
+.ui-stat__delta.is-neutral .ui-stat__delta-chip { background: var(--ui-surface-2); color: var(--ui-text-muted); }
+.ui-stat__delta-label { color: var(--ui-text-muted); }
+
+.ui-stat__spark { display: block; width: 100%; height: 36px; margin-top: 6px; overflow: visible; }
+.ui-stat__spark { --_c: var(--ui-chart-1); }
+.ui-stat__spark.is-good { --_c: var(--ui-success); }
+.ui-stat__spark.is-bad { --_c: var(--ui-danger); }
+.ui-stat__spark-line { fill: none; stroke: var(--_c); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: ui-stat-draw 1.2s var(--ui-ease) 0.15s forwards; }
+.ui-stat__spark-area { fill: var(--_c); opacity: 0.12; }
+@keyframes ui-stat-draw { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) { .ui-stat__spark-line { animation: none; stroke-dashoffset: 0; } }
+
+.ui-stat-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+/* ---- Style overrides ---- */
+
+[data-style='glass'] .ui-stat--card,
+[data-style='extra'] .ui-stat--card { backdrop-filter: blur(var(--ui-blur)) saturate(1.3); }
+
+[data-style='soft'] .ui-stat--card { border: 0; box-shadow: var(--ui-shadow-md); }
+[data-style='soft'] .ui-stat__icon { background: var(--ui-bg); box-shadow: var(--ui-shadow-inset); }
+
+:is([data-style='brutalist'], [data-style='mono'], [data-style='playful']) .ui-stat--card { border-color: var(--ui-border); box-shadow: var(--ui-shadow-md); }
+:is([data-style='brutalist'], [data-style='mono']) .ui-stat__icon { border: 2px solid var(--ui-border); background: var(--ui-accent); color: var(--ui-accent-text); }
+[data-style='brutalist'] .ui-stat__label { text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; color: var(--ui-text); }
+[data-style='brutalist'] .ui-stat__value { font-size: 2.3em; }
+[data-style='brutalist'] .ui-stat__delta-chip { border: 2px solid var(--ui-border); border-radius: 0; color: var(--ui-text) !important; }
+[data-style='playful'] .ui-stat__icon { border: 2px solid var(--ui-border); border-radius: var(--ui-radius-full); background: var(--ui-accent-soft); }
+[data-style='playful'] .ui-stat--card:hover { transform: translateY(var(--ui-hover-lift)) rotate(0.8deg); transition: transform var(--ui-duration) var(--ui-ease); }
+
+/* Extra: the number is gradient-lit, the card has a slow aurora rim, sparklines glow */
+[data-style='extra'] .ui-stat__value span {
+  background: var(--ui-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 14px rgb(255 60 172 / 0.35));
+}
+[data-style='extra'] .ui-stat--card {
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(var(--ui-raised), var(--ui-raised)) padding-box,
+    linear-gradient(var(--ui-bg), var(--ui-bg)) padding-box,
+    var(--ui-gradient) border-box;
+  transition: transform var(--ui-duration) var(--ui-ease-spring), box-shadow var(--ui-duration) var(--ui-ease);
+}
+[data-style='extra'] .ui-stat--card:hover { transform: translateY(var(--ui-hover-lift)) scale(1.02); box-shadow: var(--ui-glow); }
+[data-style='extra'] .ui-stat__icon { background: var(--ui-gradient); color: #fff; box-shadow: 0 0 14px rgb(163 59 255 / 0.5); }
+[data-style='extra'] .ui-stat__spark-line { filter: drop-shadow(0 0 4px var(--_c)); }
+[data-style='extra'] .ui-stat__spark-area { opacity: 0.25; }

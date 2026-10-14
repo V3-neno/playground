@@ -1,0 +1,68 @@
+/* Brutalist: loud, raw, no apologies. Thick black lines, hard offset shadows, shouting yellow, uppercase headings. */
+[data-style='brutalist'] {
+  --ui-bg: #fffdf0;
+  --ui-surface: #ffffff;
+  --ui-surface-2: #f1eedb;
+  --ui-raised: #ffffff;
+  --ui-raised-border: #000000;
+  --ui-field-bg: #ffffff;
+  --ui-field-border: #000000;
+  --ui-text: #000000;
+  --ui-text-muted: #3d3d3d;
+  --ui-border: #000000;
+  --ui-accent: #ffe500;
+  --ui-accent-hover: #ffd400;
+  --ui-accent-text: #000000;
+  --ui-accent-soft: #fff6a3;
+  --ui-danger: #ff3b30;
+  --ui-success: #00c853;
+  --ui-warning: #ff9100;
+  --ui-focus: #ff3bd4;
+  --ui-overlay: rgb(255 229 0 / 0.55);
+  --ui-gradient: linear-gradient(#ffe500, #ffe500);
+  --ui-hover-lift: -2px;
+  --ui-press-scale: 1;
+  --ui-radius-sm: 0;
+  --ui-radius-md: 0;
+  --ui-radius-lg: 0;
+  --ui-radius-full: 0;
+  --ui-border-width: 3px;
+  --ui-shadow-sm: 3px 3px 0 #000000;
+  --ui-shadow-md: 6px 6px 0 #000000;
+  --ui-shadow-lg: 10px 10px 0 #000000;
+  --ui-font: 'Space Grotesk', 'Arial', sans-serif;
+  --ui-font-display: 'Space Grotesk', 'Arial Black', sans-serif;
+  --ui-weight-strong: 700;
+  --ui-heading-weight: 800;
+  --ui-heading-tracking: -0.02em;
+  --ui-heading-transform: uppercase;
+  --ui-duration-fast: 60ms;
+  --ui-duration: 100ms;
+  --ui-duration-slow: 180ms;
+  --ui-ease: linear;
+  --ui-ease-spring: linear;
+  --ui-chart-1: #000000;
+  --ui-chart-2: #ffe500;
+  --ui-chart-3: #ff3bd4;
+  --ui-chart-4: #2d5bff;
+  --ui-chart-5: #ff3b30;
+  --ui-chart-6: #00c853;
+}
+[data-style='brutalist'][data-theme='dark'] {
+  --ui-bg: #0f0f0f;
+  --ui-surface: #1a1a1a;
+  --ui-surface-2: #262626;
+  --ui-raised: #1a1a1a;
+  --ui-raised-border: #ffffff;
+  --ui-field-bg: #000000;
+  --ui-field-border: #ffffff;
+  --ui-text: #ffffff;
+  --ui-text-muted: #c4c4c4;
+  --ui-border: #ffffff;
+  --ui-accent-soft: #3a3600;
+  --ui-overlay: rgb(0 0 0 / 0.7);
+  --ui-shadow-sm: 3px 3px 0 #ffffff;
+  --ui-shadow-md: 6px 6px 0 #ffffff;
+  --ui-shadow-lg: 10px 10px 0 #ffffff;
+  --ui-chart-1: #ffffff;
+}

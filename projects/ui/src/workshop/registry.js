@@ -33,6 +33,7 @@ export const components = Object.entries(modules).map(([path, mod]) => {
       render: fn,
       usesArgs: fn.length > 0, // `(args) => ...` opts the story into the Controls panel
       layout: fn.layout ?? meta.layout ?? 'centered', // centered | padded | fullscreen
+      height: fn.height ?? meta.height, // min canvas height in px, for overlays / sections
     }))
   const files = Object.keys(fileSources)
     .filter((p) => p.startsWith(dir + '/'))

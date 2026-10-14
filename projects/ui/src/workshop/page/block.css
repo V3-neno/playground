@@ -1,0 +1,14 @@
+.page-block { container-type: inline-size; }
+.page-block[data-bg='surface'] { background: var(--ui-surface); }
+.page-block[data-bg='accent'] { background: var(--ui-accent-soft); }
+.page-block[data-pad='sm'] { padding-block: 24px; }
+.page-block[data-pad='md'] { padding-block: 48px; }
+.page-block[data-pad='lg'] { padding-block: 96px; }
+.page-block__inner { margin-inline: auto; display: flex; flex-direction: column; }
+.page-block[data-width='wide'] .page-block__inner { max-width: 1200px; padding-inline: 24px; }
+.page-block[data-width='narrow'] .page-block__inner { max-width: 760px; padding-inline: 24px; }
+.page-block[data-align='center'] .page-block__inner { align-items: center; }
+.page-block[data-align='start'] .page-block__inner { align-items: flex-start; }
+.page-row { display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: var(--gap); align-items: start; }
+.page-row > * { min-width: 0; }
+@container (max-width: 760px) { .page-row { grid-template-columns: minmax(0, 1fr); } }

@@ -1,0 +1,66 @@
+.ui-stagger {
+  --_dur: var(--ui-duration-slow);
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ui-stagger__item { min-width: 0; }
+.ui-stagger__inner { opacity: 0; }
+.ui-stagger.is-started .ui-stagger__inner {
+  animation: var(--_anim, ui-stagger-rise) var(--_dur) var(--ui-ease) both;
+  animation-delay: calc(var(--_i) * var(--_stagger));
+}
+
+.ui-stagger--rise { --_anim: ui-stagger-rise; }
+.ui-stagger--fade { --_anim: ui-stagger-fade; }
+.ui-stagger--scale { --_anim: ui-stagger-scale; }
+.ui-stagger--slide { --_anim: ui-stagger-slide; }
+.ui-stagger--flip { --_anim: ui-stagger-flip; }
+.ui-stagger--pop { --_anim: ui-stagger-pop; }
+.ui-stagger--pop.is-started .ui-stagger__inner,
+.ui-stagger--warp.is-started .ui-stagger__inner { animation-timing-function: var(--ui-ease-spring); }
+.ui-stagger--warp { --_anim: ui-stagger-warp; }
+
+@keyframes ui-stagger-rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes ui-stagger-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ui-stagger-scale { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: none; } }
+@keyframes ui-stagger-slide { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
+@keyframes ui-stagger-flip { from { opacity: 0; transform: perspective(600px) rotateX(-80deg); transform-origin: top; } to { opacity: 1; transform: none; } }
+@keyframes ui-stagger-pop { 0% { opacity: 0; transform: scale(0.4); } 100% { opacity: 1; transform: none; } }
+@keyframes ui-stagger-warp {
+  0% { opacity: 0; transform: translateX(-40px) skewX(-18deg) scale(0.9); filter: blur(8px) hue-rotate(120deg); }
+  100% { opacity: 1; transform: none; filter: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-stagger__inner { opacity: 1; animation: none !important; }
+}
+.ui-root[data-motion='reduce'] .ui-stagger__inner { opacity: 1; }
+
+/* ---- Style overrides ---- */
+[data-style='brutalist'] .ui-stagger.is-started .ui-stagger__inner { animation-timing-function: steps(3, end); }
+[data-style='mono'] .ui-stagger.is-started .ui-stagger__inner { animation-timing-function: steps(5, end); }
+[data-style='playful'] .ui-stagger.is-started .ui-stagger__inner { animation-timing-function: var(--ui-ease-spring); }
+[data-style='playful'] .ui-stagger--rise { --_anim: ui-stagger-pop; }
+[data-style='soft'] .ui-stagger { --_dur: 650ms; }
+
+/* Extra: a gradient comet streaks across every row as it lands */
+[data-style='extra'] .ui-stagger__inner { position: relative; }
+[data-style='extra'] .ui-stagger.is-started .ui-stagger__inner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--ui-radius-md);
+  background: linear-gradient(90deg, transparent, rgb(255 60 172 / 0.35), rgb(0 229 199 / 0.35), transparent);
+  background-size: 50% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  animation: ui-stagger-comet 0.9s var(--ui-ease) both;
+  animation-delay: calc(var(--_i) * var(--_stagger) + 120ms);
+}
+@keyframes ui-stagger-comet {
+  from { background-position: -60% 0; opacity: 1; }
+  to { background-position: 160% 0; opacity: 0; }
+}

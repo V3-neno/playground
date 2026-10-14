@@ -1,0 +1,62 @@
+.ui-counter {
+  --_lh: 1.12em;
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.ui-counter__visual { display: inline-block; }
+
+/* Odometer */
+.ui-counter__odometer { display: inline-flex; align-items: flex-start; line-height: var(--_lh); }
+.ui-counter__col { position: relative; display: inline-block; height: var(--_lh); overflow: hidden; }
+.ui-counter__sizer { visibility: hidden; }
+.ui-counter__strip {
+  position: absolute;
+  inset: 0 0 auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateY(calc(var(--_row, 0) * -1 * var(--_lh)));
+  transition-property: transform;
+  transition-timing-function: var(--ui-ease);
+}
+.ui-counter__strip > span { display: block; height: var(--_lh); }
+.ui-counter__sym { display: inline-block; }
+
+/* Ready-made stat block for stories and quick use */
+.ui-counter-stat { display: grid; gap: 2px; }
+.ui-counter-stat__value {
+  font-family: var(--ui-font-display);
+  font-weight: var(--ui-heading-weight);
+  letter-spacing: var(--ui-heading-tracking);
+  font-size: clamp(1.8em, 6cqi, 3em);
+  line-height: 1.1;
+  color: var(--ui-text);
+}
+.ui-counter-stat__label { color: var(--ui-text-muted); font-size: 0.875em; }
+
+/* ---- Style overrides ---- */
+[data-style='brutalist'] .ui-counter__strip { transition-timing-function: steps(10, end); }
+[data-style='mono'] .ui-counter__strip { transition-timing-function: steps(10, end); }
+[data-style='mono'] .ui-counter__col { outline: 1px solid var(--ui-border); outline-offset: -1px; margin-right: 2px; padding: 0 1px; }
+[data-style='playful'] .ui-counter__strip { transition-timing-function: var(--ui-ease-spring); }
+[data-style='soft'] .ui-counter--odometer .ui-counter__col { margin: 0 1px; padding: 0 3px; border-radius: 6px; box-shadow: var(--ui-shadow-inset); }
+[data-style='glass'] :is(.ui-counter--count .ui-counter__visual, .ui-counter__strip > span, .ui-counter__sym) { background: var(--ui-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+/* Extra: slot-machine spin (two extra turns of the strip, set in JSX), neon gradient digits with motion blur */
+[data-style='extra'] .ui-counter__strip { transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+[data-style='extra'] .ui-counter__visual {
+  background: var(--ui-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 14px rgb(255 60 172 / 0.45));
+}
+[data-style='extra'] .ui-counter--odometer .ui-counter__visual { background: none; color: inherit; }
+[data-style='extra'] .ui-counter__strip > span {
+  background: var(--ui-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+[data-style='extra'] .ui-counter__col { mask-image: linear-gradient(transparent, #000 18%, #000 82%, transparent); }

@@ -1,0 +1,68 @@
+/* Playful: candy colours, chunky outlines, bouncy springs. Things lift when you hover them. */
+[data-style='playful'] {
+  --ui-bg: #fff6e9;
+  --ui-surface: #ffffff;
+  --ui-surface-2: #ffeacc;
+  --ui-raised: #ffffff;
+  --ui-raised-border: #2b1d3a;
+  --ui-field-bg: #ffffff;
+  --ui-field-border: #2b1d3a;
+  --ui-text: #2b1d3a;
+  --ui-text-muted: #6e5b84;
+  --ui-border: #2b1d3a;
+  --ui-accent: #ff5c8a;
+  --ui-accent-hover: #ff3f75;
+  --ui-accent-text: #ffffff;
+  --ui-accent-soft: #ffe1ea;
+  --ui-danger: #ff4d4d;
+  --ui-success: #2ec4a0;
+  --ui-warning: #ffb703;
+  --ui-focus: rgb(77 150 255 / 0.5);
+  --ui-overlay: rgb(43 29 58 / 0.45);
+  --ui-gradient: linear-gradient(120deg, #ff5c8a, #ffb703);
+  --ui-glow: 0 0 0 4px #ffe1ea;
+  --ui-hover-lift: -3px;
+  --ui-press-scale: 0.94;
+  --ui-radius-sm: 12px;
+  --ui-radius-md: 18px;
+  --ui-radius-lg: 28px;
+  --ui-border-width: 2px;
+  --ui-shadow-sm: 2px 3px 0 #2b1d3a;
+  --ui-shadow-md: 4px 5px 0 #2b1d3a;
+  --ui-shadow-lg: 7px 8px 0 #2b1d3a;
+  --ui-font: 'Nunito', system-ui, sans-serif;
+  --ui-font-display: 'Fredoka', 'Nunito', system-ui, sans-serif;
+  --ui-font-size: 15.5px;
+  --ui-weight-strong: 800;
+  --ui-heading-weight: 600;
+  --ui-heading-tracking: 0;
+  --ui-duration-fast: 160ms;
+  --ui-duration: 280ms;
+  --ui-duration-slow: 520ms;
+  --ui-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ui-ease-spring: cubic-bezier(0.68, -0.6, 0.32, 1.6);
+  --ui-chart-1: #ff5c8a;
+  --ui-chart-2: #4d96ff;
+  --ui-chart-3: #2ec4a0;
+  --ui-chart-4: #ffb703;
+  --ui-chart-5: #9b5de5;
+  --ui-chart-6: #ff8c42;
+}
+[data-style='playful'][data-theme='dark'] {
+  --ui-bg: #1c1330;
+  --ui-surface: #2a1f45;
+  --ui-surface-2: #362959;
+  --ui-raised: #2a1f45;
+  --ui-raised-border: #f3e8ff;
+  --ui-field-bg: #241a3b;
+  --ui-field-border: #f3e8ff;
+  --ui-text: #fff3f8;
+  --ui-text-muted: #c4b2dc;
+  --ui-border: #f3e8ff;
+  --ui-accent-soft: #4a2340;
+  --ui-glow: 0 0 0 4px #4a2340;
+  --ui-overlay: rgb(10 5 20 / 0.6);
+  --ui-shadow-sm: 2px 3px 0 #ff5c8a;
+  --ui-shadow-md: 4px 5px 0 #ff5c8a;
+  --ui-shadow-lg: 7px 8px 0 #ff5c8a;
+}

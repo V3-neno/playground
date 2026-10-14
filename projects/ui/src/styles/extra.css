@@ -1,0 +1,124 @@
+/*
+ * Extra: completely unnecessary, maximum fun. A slowly rotating neon gradient runs through everything
+ * (--ui-angle is animated on the root), surfaces glow, things spring and lift, and components may add
+ * JS flourishes (confetti, tilt, magnet) via lib/fx.js when useFx() is true.
+ */
+@property --ui-angle {
+  syntax: '<angle>';
+  inherits: true;
+  initial-value: 120deg;
+}
+@keyframes ui-extra-rotate {
+  to { --ui-angle: 480deg; }
+}
+@keyframes ui-extra-drift {
+  0%, 100% { background-position: 0% 0%, 100% 0%, 50% 100%, 0 0; }
+  50% { background-position: 20% 30%, 80% 20%, 40% 70%, 0 0; }
+}
+
+[data-style='extra'] {
+  --ui-bg: #fdf6ff;
+  --ui-surface: rgb(255 255 255 / 0.55);
+  --ui-surface-2: rgb(255 255 255 / 0.75);
+  --ui-raised: rgb(255 255 255 / 0.62);
+  --ui-raised-border: rgb(255 255 255 / 0.9);
+  --ui-blur: 14px;
+  --ui-field-bg: rgb(255 255 255 / 0.7);
+  --ui-field-border: rgb(160 80 255 / 0.35);
+  --ui-text: #1a0b2e;
+  --ui-text-muted: #6c5a8a;
+  --ui-border: rgb(160 80 255 / 0.22);
+  --ui-accent: #a33bff;
+  --ui-accent-hover: #8a1cf2;
+  --ui-accent-text: #ffffff;
+  --ui-accent-soft: rgb(163 59 255 / 0.12);
+  --ui-danger: #ff2e63;
+  --ui-success: #00c9a7;
+  --ui-warning: #ff9f1c;
+  --ui-focus: rgb(255 60 172 / 0.55);
+  --ui-overlay: rgb(60 0 90 / 0.35);
+  --ui-gradient: linear-gradient(var(--ui-angle), #ff3cac, #a33bff, #2b86c5, #00e5c7, #ff3cac);
+  --ui-glow: 0 0 18px rgb(255 60 172 / 0.45), 0 0 48px rgb(43 134 197 / 0.3);
+  --ui-hover-lift: -3px;
+  --ui-press-scale: 0.92;
+  --ui-radius-sm: 12px;
+  --ui-radius-md: 16px;
+  --ui-radius-lg: 26px;
+  --ui-shadow-sm: 0 2px 10px rgb(163 59 255 / 0.15);
+  --ui-shadow-md: 0 10px 30px rgb(163 59 255 / 0.22);
+  --ui-shadow-lg: 0 24px 70px rgb(163 59 255 / 0.3);
+  --ui-font: 'Space Grotesk', system-ui, sans-serif;
+  --ui-font-display: 'Syne', 'Space Grotesk', sans-serif;
+  --ui-weight-strong: 700;
+  --ui-heading-weight: 800;
+  --ui-heading-tracking: -0.03em;
+  --ui-duration-fast: 180ms;
+  --ui-duration: 320ms;
+  --ui-duration-slow: 700ms;
+  --ui-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ui-ease-spring: cubic-bezier(0.34, 1.8, 0.64, 1);
+  --ui-chart-1: #ff3cac;
+  --ui-chart-2: #2b86c5;
+  --ui-chart-3: #00e5c7;
+  --ui-chart-4: #ffd23f;
+  --ui-chart-5: #a33bff;
+  --ui-chart-6: #ff7a45;
+}
+[data-style='extra'][data-theme='dark'] {
+  --ui-bg: #07040f;
+  --ui-surface: rgb(255 255 255 / 0.05);
+  --ui-surface-2: rgb(255 255 255 / 0.09);
+  --ui-raised: rgb(22 12 44 / 0.66);
+  --ui-raised-border: rgb(255 255 255 / 0.14);
+  --ui-field-bg: rgb(255 255 255 / 0.05);
+  --ui-field-border: rgb(200 140 255 / 0.3);
+  --ui-text: #f6f0ff;
+  --ui-text-muted: #b4a6d8;
+  --ui-border: rgb(255 255 255 / 0.13);
+  --ui-accent: #c46bff;
+  --ui-accent-hover: #d796ff;
+  --ui-accent-text: #ffffff;
+  --ui-accent-soft: rgb(196 107 255 / 0.16);
+  --ui-overlay: rgb(5 0 15 / 0.6);
+  --ui-glow: 0 0 20px rgb(255 60 172 / 0.6), 0 0 60px rgb(0 229 199 / 0.3);
+  --ui-shadow-sm: 0 2px 10px rgb(0 0 0 / 0.5);
+  --ui-shadow-md: 0 10px 30px rgb(0 0 0 / 0.55), 0 0 30px rgb(163 59 255 / 0.15);
+  --ui-shadow-lg: 0 24px 70px rgb(0 0 0 / 0.6), 0 0 60px rgb(163 59 255 / 0.2);
+}
+
+.ui-root[data-style='extra'] {
+  animation: ui-extra-rotate 8s linear infinite, ui-extra-drift 18s ease-in-out infinite;
+  background:
+    radial-gradient(circle at 10% 15%, rgb(255 60 172 / 0.28), transparent 38%),
+    radial-gradient(circle at 90% 10%, rgb(43 134 197 / 0.28), transparent 40%),
+    radial-gradient(circle at 60% 95%, rgb(0 229 199 / 0.25), transparent 42%),
+    var(--ui-bg);
+  background-size: 140% 140%, 140% 140%, 140% 140%, auto;
+  background-repeat: no-repeat;
+}
+.ui-root[data-style='extra'][data-theme='dark'] {
+  background:
+    radial-gradient(circle at 10% 15%, rgb(255 60 172 / 0.22), transparent 38%),
+    radial-gradient(circle at 90% 10%, rgb(43 134 197 / 0.25), transparent 40%),
+    radial-gradient(circle at 60% 95%, rgb(0 229 199 / 0.18), transparent 42%),
+    radial-gradient(1px 1px at 20px 30px, rgb(255 255 255 / 0.5), transparent),
+    radial-gradient(1px 1px at 80px 120px, rgb(255 255 255 / 0.35), transparent),
+    radial-gradient(1.5px 1.5px at 150px 60px, rgb(255 255 255 / 0.45), transparent),
+    var(--ui-bg);
+  background-size: 140% 140%, 140% 140%, 140% 140%, 180px 180px, 180px 180px, 180px 180px, auto;
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat, repeat, repeat, no-repeat;
+}
+.ui-root[data-style='extra'] ::selection { background: #ff3cac; color: #fff; }
+
+/* Opt-in helper: an animated rainbow border. Put it on any element with a border-radius. */
+[data-style='extra'] .ui-fx-border {
+  border: 2px solid transparent !important;
+  background:
+    linear-gradient(var(--ui-bg), var(--ui-bg)) padding-box,
+    var(--ui-gradient) border-box !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-root[data-style='extra'] { animation: none; }
+}
+.ui-root[data-style='extra'][data-motion='reduce'] { animation: none; }

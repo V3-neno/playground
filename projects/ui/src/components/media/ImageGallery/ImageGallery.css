@@ -1,0 +1,110 @@
+.ui-gallery {
+  display: grid;
+  grid-template-columns: repeat(var(--_cols), minmax(0, 1fr));
+  gap: var(--_gap);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ui-gallery__item { min-width: 0; }
+
+.ui-gallery__tile {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  overflow: hidden;
+  border: var(--ui-border-width) solid var(--ui-raised-border);
+  border-radius: var(--ui-radius-md);
+  background: var(--ui-surface);
+  box-shadow: var(--ui-shadow-sm);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  transition: box-shadow var(--ui-duration) var(--ui-ease), transform var(--ui-duration) var(--ui-ease);
+}
+button.ui-gallery__tile { cursor: zoom-in; }
+.ui-gallery__tile:hover { box-shadow: var(--ui-shadow-md); transform: translateY(var(--ui-hover-lift)); }
+.ui-gallery__tile:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ui-focus), var(--ui-shadow-md); }
+.ui-gallery__tile img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: var(--_aspect);
+  object-fit: cover;
+  transition: transform var(--ui-duration-slow) var(--ui-ease), filter var(--ui-duration-slow) var(--ui-ease);
+}
+.ui-gallery__tile:hover img { transform: scale(1.06); }
+
+.ui-gallery__caption {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 26px 12px 10px;
+  background: linear-gradient(transparent, rgb(0 0 0 / 0.6));
+  color: #fff;
+  font-weight: var(--ui-weight-strong);
+  font-size: 0.875em;
+}
+.ui-gallery--captions-hover .ui-gallery__caption { opacity: 0; transform: translateY(6px); transition: opacity var(--ui-duration) var(--ui-ease), transform var(--ui-duration) var(--ui-ease); }
+.ui-gallery--captions-hover .ui-gallery__tile:is(:hover, :focus-visible) .ui-gallery__caption { opacity: 1; transform: none; }
+.ui-gallery--captions-none .ui-gallery__caption { display: none; }
+.ui-gallery--captions-below .ui-gallery__tile { display: flex; flex-direction: column; }
+.ui-gallery--captions-below .ui-gallery__tile img { height: auto; }
+.ui-gallery--captions-below .ui-gallery__caption { position: static; padding: 8px 12px 10px; background: var(--ui-raised); color: var(--ui-text); }
+.ui-gallery__sheen { position: absolute; inset: 0; pointer-events: none; }
+
+/* Masonry: columns flow top-to-bottom, tiles keep their natural height */
+.ui-gallery--masonry { display: block; columns: var(--_cols); column-gap: var(--_gap); }
+.ui-gallery--masonry .ui-gallery__item { break-inside: avoid; margin-bottom: var(--_gap); }
+.ui-gallery--masonry .ui-gallery__tile img { aspect-ratio: auto; height: auto; }
+
+/* Bento: a couple of feature tiles, the rest fill in */
+.ui-gallery--bento { grid-auto-rows: 120px; grid-auto-flow: dense; }
+.ui-gallery--bento .ui-gallery__tile img { aspect-ratio: auto; }
+.ui-gallery--bento .ui-gallery__item:nth-child(6n + 1) { grid-column: span 2; grid-row: span 2; }
+.ui-gallery--bento .ui-gallery__item:nth-child(6n + 4) { grid-row: span 2; }
+
+@container (max-width: 560px) {
+  .ui-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ui-gallery--masonry { columns: 2; }
+  .ui-gallery--bento { grid-auto-rows: 90px; }
+}
+
+/* ---- Style overrides ---- */
+[data-style='glass'] .ui-gallery--captions-below .ui-gallery__caption { backdrop-filter: blur(var(--ui-blur)); }
+
+[data-style='soft'] .ui-gallery__tile { padding: 6px; border: 0; box-shadow: var(--ui-shadow-md); }
+[data-style='soft'] .ui-gallery__tile img { border-radius: calc(var(--ui-radius-md) - 4px); }
+[data-style='soft'] .ui-gallery__tile:active { box-shadow: var(--ui-shadow-inset); }
+[data-style='soft'] .ui-gallery__caption { inset: auto 6px 6px 6px; border-radius: 0 0 calc(var(--ui-radius-md) - 4px) calc(var(--ui-radius-md) - 4px); }
+[data-style='soft'] .ui-gallery--captions-below .ui-gallery__caption { background: none; }
+
+:is([data-style='brutalist'], [data-style='mono'], [data-style='playful']) .ui-gallery__tile { border-color: var(--ui-border); }
+:is([data-style='brutalist'], [data-style='mono']) .ui-gallery__tile:hover { transform: translate(-3px, -3px); box-shadow: var(--ui-shadow-md); }
+:is([data-style='brutalist'], [data-style='mono']) .ui-gallery__tile:hover img { transform: none; }
+[data-style='brutalist'] .ui-gallery__caption { inset: auto auto 8px 8px; padding: 3px 8px; background: var(--ui-accent); color: #000; border: 2px solid #000; text-transform: uppercase; font-size: 0.75em; letter-spacing: 0.04em; }
+[data-style='brutalist'] .ui-gallery--captions-below .ui-gallery__caption { margin: 0; border-width: 3px 0 0; }
+[data-style='mono'] .ui-gallery__tile img { filter: grayscale(1) contrast(1.1); }
+[data-style='mono'] .ui-gallery__tile:hover img { filter: grayscale(0); }
+[data-style='playful'] .ui-gallery__item:nth-child(odd) .ui-gallery__tile:hover { transform: translateY(var(--ui-hover-lift)) rotate(-1.5deg); }
+[data-style='playful'] .ui-gallery__item:nth-child(even) .ui-gallery__tile:hover { transform: translateY(var(--ui-hover-lift)) rotate(1.5deg); }
+[data-style='playful'] .ui-gallery__tile:hover { box-shadow: var(--ui-shadow-md); }
+
+/* Extra: tiles tilt toward the cursor (useTilt) with a holographic sheen tracking it, and fly in on mount */
+[data-style='extra'] .ui-gallery__item { animation: ui-gallery-in var(--ui-duration-slow) var(--ui-ease-spring) both; animation-delay: calc(var(--_i) * 60ms); }
+@keyframes ui-gallery-in { from { opacity: 0; transform: translateY(30px) scale(0.85) rotate(-4deg); } }
+[data-style='extra'] .ui-gallery__tile { transform-style: preserve-3d; will-change: transform; }
+[data-style='extra'] .ui-gallery__tile:hover { box-shadow: var(--ui-glow), var(--ui-shadow-lg); }
+[data-style='extra'] .ui-gallery__tile:hover img { transform: scale(1.1); filter: saturate(1.3); }
+[data-style='extra'] .ui-gallery__sheen {
+  background:
+    radial-gradient(circle at var(--fx-x, 50%) var(--fx-y, 50%), rgb(255 255 255 / 0.45), transparent 45%),
+    linear-gradient(var(--ui-angle), rgb(255 60 172 / 0.25), rgb(0 229 199 / 0.25));
+  mix-blend-mode: overlay;
+  opacity: 0;
+  transition: opacity var(--ui-duration) var(--ui-ease);
+}
+[data-style='extra'] .ui-gallery__tile:hover .ui-gallery__sheen { opacity: 1; }
+[data-style='extra'] .ui-gallery__caption { font-family: var(--ui-font-display); font-size: 1em; }

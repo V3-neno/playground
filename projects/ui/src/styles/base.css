@@ -9,6 +9,8 @@
   --ui-accent: #818cf8;
   --ui-accent-hover: #a5b4fc;
   --ui-accent-text: #111113;
+  --ui-raised: #18181b;
+  --ui-overlay: rgb(0 0 0 / 0.6);
   --ui-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
   --ui-shadow-md: 0 4px 12px rgb(0 0 0 / 0.4);
   --ui-shadow-lg: 0 12px 32px rgb(0 0 0 / 0.5);

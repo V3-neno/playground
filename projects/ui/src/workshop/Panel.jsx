@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
+import { componentBundle, downloadZip } from './exporter'
 import { loadFile } from './registry'
+import { styleguideMarkdown } from './styleguideMarkdown'
+import { useThemes } from './themes'
 
 const TABS = ['Controls', 'Code', 'Notes']
 
-export function Panel({ component, args, setArgs, resetArgs }) {
+export function Panel({ component, args, setArgs, resetArgs, styleId }) {
   const [tab, setTab] = useState('Controls')
   return (
     <aside className="ws-panel">
@@ -16,14 +19,14 @@ export function Panel({ component, args, setArgs, resetArgs }) {
       </div>
       <div className="ws-panel-body">
         {tab === 'Controls' && <Controls component={component} args={args} setArgs={setArgs} resetArgs={resetArgs} />}
-        {tab === 'Code' && <Code key={component.id} component={component} />}
+        {tab === 'Code' && <Code key={component.id} component={component} styleId={styleId} />}
         {tab === 'Notes' && <Notes component={component} />}
       </div>
     </aside>
   )
 }
 
-function Controls({ component, args, setArgs, resetArgs }) {
+export function Controls({ component, args, setArgs, resetArgs }) {
   const entries = Object.entries(component.controls)
   if (!entries.length) return <p className="ws-muted">No controls. Add a <code>controls</code> object to the story file's default export.</p>
   const set = (k, v) => setArgs({ ...args, [k]: v })
@@ -82,7 +85,7 @@ function ControlInput({ control: c, value, onChange }) {
   }
 }
 
-function Code({ component }) {
+function Code({ component, styleId = 'base' }) {
   const [file, setFile] = useState(component.files[0])
   const [text, setText] = useState('')
   const [copied, setCopied] = useState(false)
@@ -93,6 +96,11 @@ function Code({ component }) {
       live = false
     }
   }, [file])
+  const { themes } = useThemes()
+  const download = async () => {
+    const files = await componentBundle(component, { styleguide: styleguideMarkdown(styleId, themes) })
+    downloadZip(component.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'), files)
+  }
   const copy = async () => {
     await navigator.clipboard.writeText(text)
     setCopied(true)
@@ -110,6 +118,9 @@ function Code({ component }) {
           {copied ? 'Copied' : 'Copy'}
         </button>
       </div>
+      <button className="ws-btn ws-btn-primary ws-download" onClick={download} title="Component folder + the lib files and styles it imports + README + STYLEGUIDE.md">
+        Download {component.title} (.zip)
+      </button>
       <pre>
         <code>{text}</code>
       </pre>

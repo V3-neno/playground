@@ -1,0 +1,24 @@
+.ui-textfield--multiline { align-items: flex-start; padding-top: 9px; padding-bottom: 9px; }
+.ui-textfield--multiline textarea { height: auto; min-height: 4.5em; resize: vertical; line-height: 1.5; }
+.ui-textfield--multiline .ui-control__icon { padding-top: 2px; }
+.ui-textfield__suffix { flex: none; color: var(--ui-text-muted); font-size: 0.875em; }
+.ui-textfield__count { align-self: flex-end; margin-top: -2px; font-size: 0.75em; color: var(--ui-text-muted); font-variant-numeric: tabular-nums; }
+.ui-textfield__count[data-full] { color: var(--ui-danger); font-weight: var(--ui-weight-strong); }
+
+/* ---- Style overrides ---- */
+[data-style='brutalist'] .ui-textfield__suffix { font-weight: 700; text-transform: uppercase; }
+
+/* Extra: the counter is rainbow, and it wobbles when you hit the limit */
+[data-style='extra'] .ui-textfield__count {
+  background: var(--ui-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 700;
+}
+[data-style='extra'] .ui-textfield__count[data-full] { animation: ui-textfield-wobble 0.5s var(--ui-ease-spring); }
+@keyframes ui-textfield-wobble {
+  25% { transform: rotate(-6deg) scale(1.2); }
+  60% { transform: rotate(5deg) scale(1.1); }
+}
+[data-style='extra'] .ui-textfield .ui-control:focus-within .ui-control__icon { color: #ff3cac; filter: drop-shadow(0 0 6px #ff3cac); }

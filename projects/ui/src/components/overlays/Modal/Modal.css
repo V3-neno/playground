@@ -1,0 +1,91 @@
+.ui-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  overflow-y: auto;
+}
+.ui-modal--inline { position: static; padding: 0; overflow: visible; }
+
+.ui-modal__panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-height: calc(100% - 8px);
+  padding: 22px 22px 20px;
+  outline: none;
+  opacity: 0;
+  transform: translateY(12px) scale(0.97);
+  transition:
+    opacity var(--ui-duration) var(--ui-ease),
+    transform var(--ui-duration) var(--ui-ease);
+}
+[data-state='open'] > .ui-modal__panel { opacity: 1; transform: none; }
+.ui-modal--sm { max-width: 380px; }
+.ui-modal--md { max-width: 520px; }
+.ui-modal--lg { max-width: 760px; }
+
+.ui-modal__head { display: flex; align-items: flex-start; gap: 12px; }
+.ui-modal__titles { flex: 1; min-width: 0; }
+.ui-modal__title { margin: 0; font-size: 1.25em; }
+.ui-modal__desc { margin: 6px 0 0; color: var(--ui-text-muted); font-size: 0.95em; }
+.ui-modal__body { overflow-y: auto; color: var(--ui-text); }
+.ui-modal__body > :first-child { margin-top: 0; }
+.ui-modal__body > :last-child { margin-bottom: 0; }
+.ui-modal__foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; padding-top: 4px; }
+
+/* Phones: a bottom sheet */
+@container (max-width: 420px) {
+  .ui-modal:not(.ui-modal--inline) { place-items: end stretch; padding: 0; }
+  .ui-modal:not(.ui-modal--inline) > .ui-modal__panel {
+    max-width: none;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    transform: translateY(40px);
+  }
+  .ui-modal:not(.ui-modal--inline)[data-state='open'] > .ui-modal__panel { transform: none; }
+  .ui-modal__foot > * { flex: 1; }
+}
+
+/* ---- Style overrides ---- */
+[data-style='corporate'] .ui-modal__panel { padding: 0; gap: 0; }
+[data-style='corporate'] .ui-modal__head { padding: 18px 20px 14px; border-bottom: 1px solid var(--ui-border); }
+[data-style='corporate'] .ui-modal__body { padding: 16px 20px; }
+[data-style='corporate'] .ui-modal__foot { padding: 12px 20px; background: var(--ui-surface); border-top: 1px solid var(--ui-border); border-radius: 0 0 var(--ui-radius-lg) var(--ui-radius-lg); }
+
+[data-style='brutalist'] .ui-modal__panel { transform: translate(-14px, -14px); }
+[data-style='brutalist'] .ui-modal[data-state='open'] > .ui-modal__panel { transform: none; }
+[data-style='brutalist'] .ui-modal__head { margin: -22px -22px 0; padding: 14px 16px 12px 22px; background: var(--ui-accent); color: #000; border-bottom: var(--ui-border-width) solid var(--ui-border); }
+[data-style='brutalist'] .ui-modal__desc { color: #000; }
+[data-style='brutalist'] .ui-modal__head .ui-ov-close { color: #000; border-color: #000; background: #fff; }
+
+[data-style='mono'] .ui-modal__head { padding-bottom: 12px; border-bottom: var(--ui-border-width) dashed var(--ui-border); }
+
+[data-style='playful'] .ui-modal__panel { transform: translateY(30px) scale(0.85) rotate(-3deg); transition-timing-function: var(--ui-ease-spring); }
+[data-style='playful'] .ui-modal[data-state='open'] > .ui-modal__panel { transform: none; }
+
+[data-style='soft'] .ui-modal__foot { padding-top: 10px; }
+
+/* Extra: springs in from far away, spinning slightly, then floats */
+@keyframes ui-modal-float {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -4px; }
+}
+[data-style='extra'] .ui-modal__panel {
+  transform: perspective(900px) rotateX(28deg) translateY(60px) scale(0.6);
+  transition:
+    opacity var(--ui-duration) var(--ui-ease),
+    transform var(--ui-duration-slow) var(--ui-ease-spring);
+}
+[data-style='extra'] .ui-modal[data-state='open'] > .ui-modal__panel {
+  transform: none;
+  animation: ui-modal-float 5s ease-in-out 0.8s infinite;
+}
+[data-style='extra'] .ui-modal__title { background: var(--ui-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
+[data-style='extra'] .ui-modal__head,
+[data-style='extra'] .ui-modal__body,
+[data-style='extra'] .ui-modal__foot { position: relative; z-index: 1; }

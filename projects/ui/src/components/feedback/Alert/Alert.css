@@ -1,0 +1,118 @@
+.ui-alert {
+  --_c: var(--ui-accent);
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: var(--ui-border-width) solid color-mix(in oklab, var(--_c) 30%, transparent);
+  border-radius: var(--ui-radius-md);
+  background: color-mix(in oklab, var(--_c) 9%, var(--ui-raised));
+  color: var(--ui-text);
+  text-align: left;
+  overflow: hidden;
+}
+.ui-alert--success { --_c: var(--ui-success); }
+.ui-alert--warning { --_c: var(--ui-warning); }
+.ui-alert--danger { --_c: var(--ui-danger); }
+
+.ui-alert__icon { display: grid; place-items: center; flex: none; margin-top: 1px; color: var(--_c); }
+.ui-alert__body { flex: 1; min-width: 0; }
+.ui-alert__title { font-weight: var(--ui-weight-strong); line-height: 1.35; }
+.ui-alert__text { color: var(--ui-text-muted); font-size: 0.94em; line-height: 1.45; }
+.ui-alert__title + .ui-alert__text { margin-top: 2px; }
+.ui-alert__actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+
+.ui-alert__close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  margin: -3px -4px -3px 0;
+  border: 0;
+  border-radius: var(--ui-radius-sm);
+  background: transparent;
+  color: var(--ui-text-muted);
+  cursor: pointer;
+  transition: background var(--ui-duration-fast) var(--ui-ease), color var(--ui-duration-fast) var(--ui-ease);
+}
+.ui-alert__close:hover { background: color-mix(in oklab, var(--_c) 14%, transparent); color: var(--ui-text); }
+.ui-alert__close:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ui-focus); }
+
+.ui-alert--outline { background: var(--ui-raised); border-color: color-mix(in oklab, var(--_c) 60%, transparent); }
+.ui-alert--outline::before { content: ''; position: absolute; inset: 0 auto 0 0; width: 3px; background: var(--_c); }
+
+.ui-alert--solid { background: var(--_c); border-color: transparent; color: #fff; }
+.ui-alert--solid .ui-alert__icon,
+.ui-alert--solid .ui-alert__text,
+.ui-alert--solid .ui-alert__close { color: rgb(255 255 255 / 0.9); }
+.ui-alert--solid .ui-alert__close:hover { background: rgb(255 255 255 / 0.18); color: #fff; }
+/* Accent "info" can be a light colour in dark themes; keep its text dark */
+.ui-alert--solid.ui-alert--info { color: var(--ui-accent-text); }
+.ui-alert--solid.ui-alert--info :is(.ui-alert__icon, .ui-alert__text, .ui-alert__close) { color: var(--ui-accent-text); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .ui-alert { animation: ui-alert-in var(--ui-duration-slow) var(--ui-ease) both; }
+}
+.ui-alert.is-leaving { animation: ui-alert-out var(--ui-duration) var(--ui-ease) forwards; }
+@keyframes ui-alert-in { from { opacity: 0; transform: translateY(-6px); } }
+@keyframes ui-alert-out { to { opacity: 0; transform: translateX(16px) scale(0.98); } }
+
+/* ---- Style overrides ---- */
+
+[data-style='corporate'] .ui-alert--soft { border-left: 3px solid var(--_c); }
+
+[data-style='glass'] .ui-alert { backdrop-filter: blur(var(--ui-blur)); border-color: var(--ui-raised-border); background: color-mix(in oklab, var(--_c) 10%, var(--ui-raised)); }
+[data-style='glass'] .ui-alert--solid { background: color-mix(in oklab, var(--_c) 80%, transparent); }
+
+/* Soft: the alert is a raised tile; the icon sits in a pressed well */
+[data-style='soft'] .ui-alert { border: 0; background: var(--ui-raised); box-shadow: var(--ui-shadow-md); }
+[data-style='soft'] .ui-alert__icon { width: 34px; height: 34px; margin: -4px 0; border-radius: 50%; box-shadow: var(--ui-shadow-inset); }
+[data-style='soft'] .ui-alert--solid { background: var(--_c); }
+[data-style='soft'] .ui-alert--solid .ui-alert__icon { box-shadow: inset 2px 2px 5px rgb(0 0 0 / 0.2), inset -2px -2px 5px rgb(255 255 255 / 0.25); }
+[data-style='soft'] .ui-alert--outline::before { display: none; }
+
+/* Brutalist / mono / playful: hard border, offset shadow */
+:is([data-style='brutalist'], [data-style='mono'], [data-style='playful']) .ui-alert { border-color: var(--ui-border); box-shadow: var(--ui-shadow-md); }
+[data-style='brutalist'] .ui-alert--soft { background: color-mix(in oklab, var(--_c) 22%, var(--ui-raised)); }
+[data-style='brutalist'] .ui-alert--info { --_c: #2d5bff; }
+[data-style='brutalist'] .ui-alert__title { text-transform: uppercase; letter-spacing: 0.03em; font-weight: 800; }
+[data-style='brutalist'] .ui-alert--outline::before { width: 10px; }
+[data-style='brutalist'] .ui-alert--outline { padding-left: 22px; }
+[data-style='mono'] .ui-alert--soft { background: var(--ui-raised); }
+[data-style='mono'] .ui-alert__title::before { content: '> '; }
+[data-style='mono'] .ui-alert--info { --_c: var(--ui-text); }
+[data-style='playful'] .ui-alert__icon { animation: ui-alert-bob 2.4s ease-in-out infinite; }
+@keyframes ui-alert-bob { 50% { transform: translateY(-2px) rotate(-8deg); } }
+
+/* Extra: frosted card, rotating gradient border, pulsing halo around the icon, springy entrance */
+[data-style='extra'] .ui-alert {
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(color-mix(in oklab, var(--_c) 10%, var(--ui-bg)), color-mix(in oklab, var(--_c) 10%, var(--ui-bg))) padding-box,
+    var(--ui-gradient) border-box;
+  box-shadow: var(--ui-shadow-md);
+}
+[data-style='extra'] .ui-alert--solid {
+  background: linear-gradient(var(--_c), var(--_c)) padding-box, var(--ui-gradient) border-box;
+  box-shadow: 0 0 24px color-mix(in oklab, var(--_c) 55%, transparent);
+}
+[data-style='extra'] .ui-alert__icon { position: relative; filter: drop-shadow(0 0 6px var(--_c)); }
+[data-style='extra'] .ui-alert__icon::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 2px solid var(--_c);
+  animation: ui-alert-halo 2s ease-out infinite;
+}
+[data-style='extra'] .ui-alert__title { font-family: var(--ui-font-display); letter-spacing: -0.01em; }
+@keyframes ui-alert-halo { from { transform: scale(0.6); opacity: 0.9; } to { transform: scale(1.6); opacity: 0; } }
+@media (prefers-reduced-motion: no-preference) {
+  [data-style='extra'] .ui-alert { animation: ui-alert-spring 0.7s var(--ui-ease-spring) both; }
+  [data-style='extra'] .ui-alert.is-leaving { animation: ui-alert-zap 0.45s var(--ui-ease) forwards; }
+}
+@keyframes ui-alert-spring { from { opacity: 0; transform: translateY(-14px) scale(0.92) rotate(-1deg); } }
+@keyframes ui-alert-zap { 40% { transform: scale(1.03); filter: brightness(1.6) saturate(1.6); } to { opacity: 0; transform: scale(0.6) rotate(4deg); filter: blur(6px); } }

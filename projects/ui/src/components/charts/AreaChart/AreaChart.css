@@ -1,0 +1,10 @@
+/* Area chart: marks live in charts/_shared/lineplot.css; this file tunes area-only details. */
+.ui-area-chart .ui-lineplot__area { transform-origin: 50% 100%; }
+
+/* ---- Style overrides ---- */
+/* Soft: fills sink slightly into the surface */
+[data-style='soft'] .ui-area-chart .ui-lineplot__area:not([data-stacked]) { filter: drop-shadow(0 4px 6px rgb(109 93 252 / 0.18)); }
+/* Extra: overlapping fills breathe gently, like a light show */
+[data-style='extra'] .ui-area-chart .ui-lineplot__area:not([data-stacked]) { animation: ui-area-breathe 4s ease-in-out infinite; }
+[data-style='extra'] .ui-area-chart .ui-lineplot__area:nth-of-type(2n) { animation-delay: -2s; }
+@keyframes ui-area-breathe { 50% { opacity: 0.6; filter: saturate(1.6) brightness(1.15); } }
