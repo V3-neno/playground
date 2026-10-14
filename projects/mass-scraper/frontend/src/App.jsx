@@ -62,7 +62,8 @@ export default function App() {
   const [includeDefaults, setIncludeDefaults] = useState(saved.includeDefaults ?? true)
   const [fields, setFields] = useState(saved.fields ?? [{ name: 'quotes', selector: '.quote .text::text', all: true }])
   const [discovery, setDiscovery] = useState(saved.discovery ?? 'list')
-  const [maxPages, setMaxPages] = useState(saved.maxPages ?? 500)
+  const [maxSeeds, setMaxSeeds] = useState(saved.maxSeeds ?? 1000)
+  const [maxPagesPerSite, setMaxPagesPerSite] = useState(saved.maxPagesPerSite ?? 500)
   const [maxDepth, setMaxDepth] = useState(saved.maxDepth ?? 3)
   const [respectRobots, setRespectRobots] = useState(saved.respectRobots ?? true)
 
@@ -85,11 +86,11 @@ export default function App() {
         'mass-scraper:form',
         JSON.stringify({
           urlsText, mode, concurrency, timeout, includeDefaults, fields,
-          discovery, maxPages, maxDepth, respectRobots,
+          discovery, maxSeeds, maxPagesPerSite, maxDepth, respectRobots,
         }),
       )
     } catch {}
-  }, [urlsText, mode, concurrency, timeout, includeDefaults, fields, discovery, maxPages, maxDepth, respectRobots])
+  }, [urlsText, mode, concurrency, timeout, includeDefaults, fields, discovery, maxSeeds, maxPagesPerSite, maxDepth, respectRobots])
 
   const refreshHistory = () =>
     fetch('/api/jobs')
@@ -143,7 +144,8 @@ export default function App() {
       timeout: Number(timeout),
       include_defaults: includeDefaults,
       discovery,
-      max_pages: Number(maxPages),
+      max_seeds: Number(maxSeeds),
+      max_pages_per_site: Number(maxPagesPerSite),
       max_depth: Number(maxDepth),
       respect_robots: respectRobots,
       fields: fields.filter((f) => f.name.trim() && f.selector.trim()),
@@ -180,6 +182,7 @@ export default function App() {
   const cancel = () => job && fetch(`/api/jobs/${job.id}/cancel`, { method: 'POST' })
 
   const running = job && !job.finished
+  const usedSeeds = Math.min(urlCount, Number(maxSeeds) || urlCount)
   const orb = orbFor(job)
   const done = job ? job.ok + job.failed : 0
   const pct = job?.total ? Math.round((done / job.total) * 100) : 0
@@ -226,6 +229,21 @@ export default function App() {
             spellCheck={false}
             placeholder="One URL per line. Lines starting with # are ignored."
           />
+          <div className="inline-field">
+            <label className="label" htmlFor="max-seeds">
+              Seed URL limit
+            </label>
+            <input id="max-seeds" type="number" min="1" max="20000" value={maxSeeds} onChange={(e) => setMaxSeeds(e.target.value)} />
+          </div>
+          <p className="muted small">
+            Caps how many of the URLs pasted above are used.
+            {discovery !== 'list' && ' Pages found through sitemaps or links have their own per-site limit below.'}
+          </p>
+          {urlCount > Number(maxSeeds) && (
+            <p className="warn small">
+              {urlCount} URLs pasted, so only the first {maxSeeds} will be used.
+            </p>
+          )}
 
           <label className="label">Discovery</label>
           <div className="segmented">
@@ -240,8 +258,14 @@ export default function App() {
             <>
               <div className="grid2">
                 <div>
-                  <label className="label">Max pages</label>
-                  <input type="number" min="1" max="20000" value={maxPages} onChange={(e) => setMaxPages(e.target.value)} />
+                  <label className="label">Max pages per site</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="20000"
+                    value={maxPagesPerSite}
+                    onChange={(e) => setMaxPagesPerSite(e.target.value)}
+                  />
                 </div>
                 {discovery === 'links' && (
                   <div>
@@ -250,6 +274,9 @@ export default function App() {
                   </div>
                 )}
               </div>
+              <p className="muted small">
+                Each site gets its own budget of discovered pages. Seed URLs don't count toward it.
+              </p>
               <label className="label row">
                 <input type="checkbox" checked={respectRobots} onChange={(e) => setRespectRobots(e.target.checked)} />
                 Respect robots.txt
@@ -328,8 +355,8 @@ export default function App() {
             ) : (
               <button className="primary" onClick={start} disabled={!urlCount}>
                 {discovery === 'list'
-                  ? `Scrape ${urlCount} URL${urlCount === 1 ? '' : 's'}`
-                  : `Crawl from ${urlCount} seed${urlCount === 1 ? '' : 's'}`}
+                  ? `Scrape ${usedSeeds} URL${usedSeeds === 1 ? '' : 's'}`
+                  : `Crawl from ${usedSeeds} seed${usedSeeds === 1 ? '' : 's'}`}
               </button>
             )}
           </div>
@@ -376,7 +403,7 @@ export default function App() {
                 <Stat k="Rate" v={job ? `${rate.toFixed(1)}/s` : '—'} />
                 <Stat k={job?.finished ? 'Took' : 'ETA'} v={job ? fmtDur(job.finished ? elapsed : eta) : '—'} />
               </div>
-              {job && job.discovery_mode !== 'list' && <DiscoveryLine job={job} />}
+              {job && (job.discovery_mode !== 'list' || job.discovery?.seeds_dropped > 0) && <DiscoveryLine job={job} />}
               {job?.error && <p className="error">{job.error}</p>}
             </div>
             {job?.finished && (
@@ -472,14 +499,32 @@ const RowView = memo(function RowView({ r, mode, open, onToggle }) {
 function DiscoveryLine({ job }) {
   const d = job.discovery || {}
   const plural = (n, word, suffix = 's') => `${n} ${word}${n === 1 ? '' : suffix}`
+  const capped = d.capped_sites || []
   const parts = []
-  if (job.discovery_mode === 'sitemap') parts.push(`${plural(d.sitemaps, 'sitemap')} read`)
-  if (d.sitemap_errors) parts.push(plural(d.sitemap_errors, 'sitemap miss', 'es'))
-  parts.push(`${plural(job.total, 'URL')} found`)
-  if (d.robots_blocked) parts.push(`${d.robots_blocked} blocked by robots.txt`)
-  if (job.skipped) parts.push(`${job.skipped} skipped`)
-  if (d.capped) parts.push('max pages reached')
-  return <p className="muted small discovery-line">{parts.join(' · ')}</p>
+  if (job.discovery_mode !== 'list') {
+    parts.push(plural(d.sites, 'site'))
+    if (job.discovery_mode === 'sitemap') parts.push(`${plural(d.sitemaps, 'sitemap')} read`)
+    if (d.sitemap_errors) parts.push(plural(d.sitemap_errors, 'sitemap miss', 'es'))
+    parts.push(`${plural(job.total, 'URL')} found`)
+    if (d.robots_blocked) parts.push(`${d.robots_blocked} blocked by robots.txt`)
+    if (job.skipped) parts.push(`${job.skipped} skipped`)
+  }
+  return (
+    <p className="muted small discovery-line">
+      {parts.join(' · ')}
+      {capped.length > 0 && (
+        <span title={capped.join('\n')}>
+          {parts.length ? ' · ' : ''}page limit reached on {capped.length} of {plural(d.sites, 'site')}
+        </span>
+      )}
+      {d.seeds_dropped > 0 && (
+        <span className="warn">
+          {parts.length || capped.length ? ' · ' : ''}
+          {plural(d.seeds_dropped, 'seed URL')} over the seed limit ignored
+        </span>
+      )}
+    </p>
+  )
 }
 
 function Stat({ k, v }) {

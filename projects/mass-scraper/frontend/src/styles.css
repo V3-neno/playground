@@ -140,3 +140,8 @@ tbody tr:not(.detail):hover { background: var(--soft); }
 tr.detail td { white-space: normal; background: var(--soft); }
 tr.detail pre { margin: 6px 0 0; font-family: var(--mono); font-size: 12px; white-space: pre-wrap; word-break: break-word; max-height: 360px; overflow: auto; }
 .discovery-line { margin: 10px 0 0; }
+.inline-field { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 4px; }
+.inline-field .label { margin: 0; }
+.inline-field input { width: 110px; }
+.warn { color: var(--active); }
+p.warn { margin: 0 0 4px; }

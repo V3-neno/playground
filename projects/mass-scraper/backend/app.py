@@ -6,6 +6,9 @@ Discovery modes:
   list     scrape exactly the URLs given
   sitemap  also scrape every URL listed in the seeds' sitemaps (robots.txt -> sitemap.xml, nested indexes, .gz)
   links    breadth-first crawl of internal links from the seeds, up to max_depth
+
+Limits: `max_seeds` caps the pasted list; `max_pages_per_site` caps pages *discovered* on each site
+(seeds don't count towards it).
 """
 
 from __future__ import annotations
@@ -67,7 +70,8 @@ class JobRequest(BaseModel):
     fields: list[FieldRule] = []
     include_defaults: bool = True  # title, meta description, h1, link count
     discovery: Discovery = "list"
-    max_pages: int = Field(default=500, ge=1, le=20000)
+    max_seeds: int = Field(default=1000, ge=1, le=20000)  # hard cap on the pasted seed list
+    max_pages_per_site: int = Field(default=500, ge=1, le=20000)  # discovered pages per site, seeds excluded
     max_depth: int = Field(default=3, ge=0, le=20)  # links mode only
     respect_robots: bool = True  # sitemap / links modes only
 
@@ -79,12 +83,20 @@ class Job:
     seeds: list[str]
     urls: list[str] = field(default_factory=list)  # every URL queued for scraping, index = row id
     seen: set[str] = field(default_factory=set)
+    site_counts: dict[str, int] = field(default_factory=dict)  # discovered (non-seed) URLs per site
     status: str = "queued"  # queued | starting | running | done | cancelled | error
     created: float = field(default_factory=time.time)
     finished: float | None = None
     results: dict[int, dict[str, Any]] = field(default_factory=dict)
     discovery: dict[str, Any] = field(
-        default_factory=lambda: {"sitemaps": 0, "sitemap_errors": 0, "robots_blocked": 0, "capped": False}
+        default_factory=lambda: {
+            "sitemaps": 0,
+            "sitemap_errors": 0,
+            "robots_blocked": 0,
+            "seeds_dropped": 0,  # pasted URLs beyond max_seeds
+            "sites": 0,
+            "capped_sites": [],  # sites that hit max_pages_per_site
+        }
     )
     events: list[dict[str, Any]] = field(default_factory=list)
     cond: asyncio.Condition = field(default_factory=asyncio.Condition)
@@ -268,7 +280,8 @@ class Crawler:
         self.fetch = fetch  # page fetcher for the chosen mode
         self.http = http  # always plain HTTP; used for robots.txt and sitemaps
         self.queue: asyncio.Queue[tuple[int, str, int]] = asyncio.Queue()
-        self.sites = {site_of(u) for u in job.seeds}
+        self.sites = {site_of(u) for u in job.seeds}  # every host we may crawl, including redirect aliases
+        self.alias: dict[str, str] = {}  # redirected-to host -> the seed site whose budget it shares
         self._robots: dict[str, asyncio.Future] = {}
 
     async def run(self) -> None:
@@ -296,21 +309,41 @@ class Crawler:
         url = canonical(url)
         if not url or url in job.seen:
             return False
-        if len(job.urls) >= self.req.max_pages:
-            job.discovery["capped"] = True
+        site = self.budget_site(url)
+        if via != "seed" and self.site_full(site):
             return False
         job.seen.add(url)
-        if via != "seed" and not await self.allowed(url):
-            job.discovery["robots_blocked"] += 1
-            return False
-        if len(job.urls) >= self.req.max_pages:  # re-check: the robots lookup may have yielded
-            job.discovery["capped"] = True
-            return False
+        if via != "seed":
+            if not await self.allowed(url):
+                job.discovery["robots_blocked"] += 1
+                return False
+            if self.site_full(site):  # re-check: the robots lookup may have yielded
+                return False
+            job.site_counts[site] = job.site_counts.get(site, 0) + 1
         i = len(job.urls)
         job.urls.append(url)
         job.results[i] = {"i": i, "url": url, "state": "queued", "via": via, "depth": depth}
         self.queue.put_nowait((i, url, depth))
         await job.tick()
+        return True
+
+    def budget_site(self, url: str) -> str:
+        site = site_of(url)
+        return self.alias.get(site, site)
+
+    def register_alias(self, final_url: str, site: str) -> None:
+        """A seed site redirected to another host (e.g. old-brand.se -> new-brand.com): crawl it as the same site."""
+        final = site_of(final_url)
+        if final and final != site and final not in self.sites:
+            self.alias[final] = site
+            self.sites.add(final)
+
+    def site_full(self, site: str) -> bool:
+        if self.job.site_counts.get(site, 0) < self.req.max_pages_per_site:
+            return False
+        capped = self.job.discovery["capped_sites"]
+        if site not in capped:
+            capped.append(site)
         return True
 
     async def worker(self) -> None:
@@ -347,6 +380,8 @@ class Crawler:
             final = canonical(str(page.url))
             if final:
                 job.seen.add(final)  # don't re-scrape a redirect target under its own URL
+                if base["via"] == "seed":
+                    self.register_alias(final, site_of(url))
             if self.req.discovery == "links" and depth < self.req.max_depth:
                 await self.follow_links(page, depth)
 
@@ -362,9 +397,6 @@ class Crawler:
             url = canonical(page.urljoin(href))
             if url and site_of(url) in self.sites and is_page_like(url):
                 await self.add(url, depth=depth + 1, via="link")
-            if len(self.job.urls) >= self.req.max_pages:
-                self.job.discovery["capped"] = True
-                return
 
     # -- robots.txt
 
@@ -391,18 +423,36 @@ class Crawler:
     # -- sitemaps
 
     async def discover_sitemaps(self, explicit: list[str]) -> None:
+        """Reads every seed site's sitemaps in parallel; each site fills its own page budget."""
+        self.sites.update(site_of(u) for u in explicit)
+        groups: dict[str, tuple[list[str], list[str]]] = {}  # site -> (explicit sitemaps, origins)
+        for sm in explicit:
+            groups.setdefault(site_of(sm), ([], []))[0].append(sm)
+        for url in self.job.seeds:
+            if url not in explicit:
+                origins = groups.setdefault(site_of(url), ([], []))[1]
+                if origin_of(url) not in origins:
+                    origins.append(origin_of(url))
+
+        sem = asyncio.Semaphore(self.req.concurrency)
+
+        async def one(site: str, sitemaps: list[str], origins: list[str]) -> None:
+            async with sem:
+                await self.site_sitemaps(site, sitemaps, origins)
+
+        await asyncio.gather(*(one(site, sm, og) for site, (sm, og) in groups.items()))
+
+    async def site_sitemaps(self, site: str, explicit: list[str], origins: list[str]) -> None:
         job = self.job
         pending: list[str] = list(explicit)
-        self.sites.update(site_of(u) for u in explicit)
-
         # robots.txt Sitemap: lines first, then the conventional locations.
-        for origin in dict.fromkeys(origin_of(u) for u in job.seeds if u not in explicit):
+        for origin in origins:
             rp = await self.robots_for(origin)
             listed = list(rp.sitemaps) if rp else []
             pending += listed or [origin + "/sitemap.xml", origin + "/sitemap_index.xml"]
 
         visited: set[str] = set()
-        while pending and len(visited) < MAX_SITEMAP_FILES and len(job.urls) < self.req.max_pages:
+        while pending and len(visited) < MAX_SITEMAP_FILES and not self.site_full(site):
             sm = pending.pop(0)
             if sm in visited:
                 continue
@@ -412,6 +462,7 @@ class Crawler:
                 if r.status >= 400:
                     raise ValueError(f"HTTP {r.status}")
                 pages, children = parse_sitemap(r.body)
+                self.register_alias(str(r.url), site)
             except Exception:
                 job.discovery["sitemap_errors"] += 1
                 await job.tick()
@@ -421,8 +472,7 @@ class Crawler:
             for url in pages:
                 if site_of(url) in self.sites and is_page_like(url):
                     await self.add(url, depth=0, via="sitemap")
-                if len(job.urls) >= self.req.max_pages:
-                    job.discovery["capped"] = True
+                if self.site_full(site):
                     break
             await job.tick()
 
@@ -484,7 +534,10 @@ async def create_job(req: JobRequest):
     seeds = normalize_seeds(req.urls)
     if not seeds:
         raise HTTPException(400, "no valid URLs")
-    job = Job(id=uuid.uuid4().hex[:10], req=req, seeds=seeds)
+    dropped = max(0, len(seeds) - req.max_seeds)
+    job = Job(id=uuid.uuid4().hex[:10], req=req, seeds=seeds[: req.max_seeds])
+    job.discovery["seeds_dropped"] = dropped
+    job.discovery["sites"] = len({site_of(u) for u in job.seeds})
     JOBS[job.id] = job
     job.task = asyncio.create_task(run_job(job))
     return job.summary()
