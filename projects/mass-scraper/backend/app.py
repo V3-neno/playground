@@ -41,7 +41,8 @@ DIST_DIR = ROOT.parent / "frontend" / "dist"
 DATA_DIR.mkdir(exist_ok=True)
 
 ROBOTS_UA = "MassScraper"
-MAX_SITEMAP_FILES = 500
+MAX_SITEMAP_FILES = 500  # per site
+SITEMAP_READERS = 8  # sitemap files fetched in parallel per site
 SKIP_EXTENSIONS = (
     ".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".ico", ".avif", ".bmp",
     ".pdf", ".zip", ".gz", ".rar", ".7z", ".tar", ".dmg", ".exe", ".msi",
@@ -213,7 +214,10 @@ def extract(page: Any, req: JobRequest) -> dict[str, Any]:
     if req.include_defaults:
         data["title"] = _clean(page.css("title::text").get())
         data["description"] = _clean(page.css('meta[name="description"]::attr(content)').get())
-        data["h1"] = _clean(page.css("h1::text").get())
+        h1s = page.css("h1")
+        # Full text including nested <span>/<b> etc., joined the way a browser renders it.
+        data["h1"] = _clean(h1s[0].get_all_text(separator="", valid_values=False)) if h1s else None
+        data["h1_count"] = len(h1s)
         data["links"] = len(page.css("a::attr(href)").getall())
     for rule in req.fields:
         sel = rule.selector.strip()
@@ -286,6 +290,8 @@ class Crawler:
         self.sites = {site_of(u) for u in job.seeds}  # every host we may crawl, including redirect aliases
         self.alias: dict[str, str] = {}  # redirected-to host -> the seed site whose budget it shares
         self._robots: dict[str, asyncio.Future] = {}
+        # robots.txt + sitemap requests across all sites, so discovery can't flood beyond the chosen concurrency
+        self.discovery_sem = asyncio.Semaphore(self.req.concurrency)
 
     async def run(self) -> None:
         sitemap_seeds = []
@@ -412,7 +418,8 @@ class Crawler:
 
     async def _fetch_robots(self, origin: str) -> Protego | None:
         try:
-            r = await self.http(origin + "/robots.txt")
+            async with self.discovery_sem:
+                r = await self.http(origin + "/robots.txt")
             if r.status >= 400:
                 return None
             return Protego.parse(r.body.decode(r.encoding or "utf-8", errors="replace"))
@@ -442,13 +449,9 @@ class Crawler:
         first_seed: dict[str, str] = {}
         for url in self.job.seeds:
             first_seed.setdefault(site_of(url), url)
-        sem = asyncio.Semaphore(self.req.concurrency)
-
-        async def one(site: str, sitemaps: list[str], origins: list[str]) -> None:
-            async with sem:
-                await self.site_sitemaps(site, first_seed[site], sitemaps, origins)
-
-        await asyncio.gather(*(one(site, sm, og) for site, (sm, og) in groups.items()))
+        await asyncio.gather(
+            *(self.site_sitemaps(site, first_seed[site], sm, og) for site, (sm, og) in groups.items())
+        )
 
     async def site_sitemaps(self, site: str, seed: str, explicit: list[str], origins: list[str]) -> None:
         job = self.job
@@ -459,14 +462,19 @@ class Crawler:
             listed = list(rp.sitemaps) if rp else []
             pending += listed or [origin + "/sitemap.xml", origin + "/sitemap_index.xml"]
 
+        # Sitemap indexes can list dozens of child sitemaps; read up to SITEMAP_READERS of them at once.
+        files: asyncio.Queue[str] = asyncio.Queue()
         visited: set[str] = set()
-        while pending and len(visited) < MAX_SITEMAP_FILES and not self.site_full(site):
-            sm = pending.pop(0)
-            if sm in visited:
-                continue
-            visited.add(sm)
+
+        def push(sm: str) -> None:
+            if sm not in visited and len(visited) < MAX_SITEMAP_FILES:
+                visited.add(sm)
+                files.put_nowait(sm)
+
+        async def read(sm: str) -> None:
             try:
-                r = await self.http(sm)
+                async with self.discovery_sem:
+                    r = await self.http(sm)
                 if r.status >= 400:
                     raise ValueError(f"HTTP {r.status}")
                 pages, children = parse_sitemap(r.body)
@@ -474,15 +482,35 @@ class Crawler:
             except Exception:
                 job.discovery["sitemap_errors"] += 1
                 await job.tick()
-                continue
+                return
             job.discovery["sitemaps"] += 1
-            pending += [c for c in children if c not in visited]
+            for child in children:
+                push(child)
             for url in pages:
                 if site_of(url) in self.sites and is_page_like(url):
                     await self.add(url, depth=0, via="sitemap", seed=seed)
                 if self.site_full(site):
                     break
             await job.tick()
+
+        async def reader() -> None:
+            while True:
+                sm = await files.get()
+                try:
+                    if not self.site_full(site):
+                        await read(sm)
+                finally:
+                    files.task_done()
+
+        for sm in pending:
+            push(sm)
+        readers = [asyncio.create_task(reader()) for _ in range(SITEMAP_READERS)]
+        try:
+            await files.join()
+        finally:
+            for t in readers:
+                t.cancel()
+            await asyncio.gather(*readers, return_exceptions=True)
 
 
 async def run_job(job: Job) -> None:
