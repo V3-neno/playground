@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ThinkingOrb } from 'thinking-orbs'
 
 const MODES = [
@@ -6,6 +6,17 @@ const MODES = [
   { id: 'dynamic', label: 'Browser', hint: 'Headless Chromium. Renders JavaScript.' },
   { id: 'stealth', label: 'Stealth', hint: 'Patched browser for protected sites. Slowest.' },
 ]
+
+const DISCOVERY = [
+  { id: 'list', label: 'List only', hint: 'Scrape exactly the URLs above.' },
+  {
+    id: 'sitemap',
+    label: 'Sitemap',
+    hint: "Read each site's sitemap (robots.txt → sitemap.xml, nested indexes) and scrape every URL in it. You can also paste sitemap URLs directly.",
+  },
+  { id: 'links', label: 'Internal links', hint: 'Follow links that stay on the same site, breadth-first, up to the max depth.' },
+]
+const ROW_RENDER_LIMIT = 1000
 
 // Which orb animation represents each phase of a job.
 const RUNNING_ORB = { http: 'searching', dynamic: 'working', stealth: 'weaving' }
@@ -16,7 +27,9 @@ function orbFor(job) {
     case 'starting':
       return { state: 'connecting', label: job.mode === 'http' ? 'Opening session…' : 'Launching browsers…' }
     case 'running':
-      return { state: RUNNING_ORB[job.mode], label: 'Scraping…' }
+      if (job.discovery_mode === 'sitemap' && job.ok + job.failed + job.active === 0)
+        return { state: 'connecting', label: 'Reading sitemaps…' }
+      return { state: RUNNING_ORB[job.mode], label: job.discovery_mode === 'list' ? 'Scraping…' : 'Crawling…' }
     case 'done':
       return { state: 'shaping', label: 'Done', paused: true }
     case 'cancelled':
@@ -48,6 +61,10 @@ export default function App() {
   const [timeout, setTimeoutSec] = useState(saved.timeout ?? 30)
   const [includeDefaults, setIncludeDefaults] = useState(saved.includeDefaults ?? true)
   const [fields, setFields] = useState(saved.fields ?? [{ name: 'quotes', selector: '.quote .text::text', all: true }])
+  const [discovery, setDiscovery] = useState(saved.discovery ?? 'list')
+  const [maxPages, setMaxPages] = useState(saved.maxPages ?? 500)
+  const [maxDepth, setMaxDepth] = useState(saved.maxDepth ?? 3)
+  const [respectRobots, setRespectRobots] = useState(saved.respectRobots ?? true)
 
   const [job, setJob] = useState(null)
   const [rows, setRows] = useState({})
@@ -66,10 +83,13 @@ export default function App() {
     try {
       localStorage.setItem(
         'mass-scraper:form',
-        JSON.stringify({ urlsText, mode, concurrency, timeout, includeDefaults, fields }),
+        JSON.stringify({
+          urlsText, mode, concurrency, timeout, includeDefaults, fields,
+          discovery, maxPages, maxDepth, respectRobots,
+        }),
       )
     } catch {}
-  }, [urlsText, mode, concurrency, timeout, includeDefaults, fields])
+  }, [urlsText, mode, concurrency, timeout, includeDefaults, fields, discovery, maxPages, maxDepth, respectRobots])
 
   const refreshHistory = () =>
     fetch('/api/jobs')
@@ -82,15 +102,29 @@ export default function App() {
     return () => esRef.current?.close()
   }, [])
 
+  // SSE events are buffered and applied once per animation frame, so big crawls stay smooth.
+  const pending = useRef({ job: null, rows: {} })
+  const frame = useRef(0)
+  function flush() {
+    frame.current = 0
+    const { job: j, rows: r } = pending.current
+    pending.current = { job: null, rows: {} }
+    if (Object.keys(r).length) setRows((prev) => ({ ...prev, ...r }))
+    if (j) {
+      setJob(j)
+      setHistory((h) => h.map((x) => (x.id === j.id ? j : x)))
+    }
+  }
+
   function subscribe(id) {
     esRef.current?.close()
     const es = new EventSource(`/api/jobs/${id}/events`)
     esRef.current = es
     es.onmessage = (e) => {
       const ev = JSON.parse(e.data)
-      setJob(ev.job)
-      setHistory((h) => h.map((x) => (x.id === ev.job.id ? ev.job : x)))
-      if (ev.type === 'row') setRows((prev) => ({ ...prev, [ev.row.i]: ev.row }))
+      pending.current.job = ev.job
+      if (ev.type === 'row') pending.current.rows[ev.row.i] = ev.row
+      if (!frame.current) frame.current = requestAnimationFrame(flush)
       if (ev.job.finished) {
         es.close()
         refreshHistory()
@@ -108,6 +142,10 @@ export default function App() {
       concurrency: Number(concurrency),
       timeout: Number(timeout),
       include_defaults: includeDefaults,
+      discovery,
+      max_pages: Number(maxPages),
+      max_depth: Number(maxDepth),
+      respect_robots: respectRobots,
       fields: fields.filter((f) => f.name.trim() && f.selector.trim()),
     }
     try {
@@ -132,10 +170,12 @@ export default function App() {
     const res = await fetch(`/api/jobs/${id}`)
     const d = await res.json()
     setJob(d.job)
-    setRows(Object.fromEntries(d.rows.map((r) => [r.i, r])))
+    setRows(Object.fromEntries(d.rows.filter((r) => r.state !== 'queued').map((r) => [r.i, r])))
     setOpen(null)
     if (!d.job.finished) subscribe(id)
   }
+
+  const toggleRow = useCallback((i) => setOpen((o) => (o === i ? null : i)), [])
 
   const cancel = () => job && fetch(`/api/jobs/${job.id}/cancel`, { method: 'POST' })
 
@@ -147,9 +187,13 @@ export default function App() {
   const rate = elapsed > 0 ? done / elapsed : 0
   const eta = rate > 0 && job ? Math.max(0, (job.total - done) / rate) : null
 
-  const rowList = Object.values(rows)
-    .sort((a, b) => a.i - b.i)
-    .filter((r) => filter === 'all' || r.state === filter)
+  const rowList = useMemo(
+    () =>
+      Object.values(rows)
+        .sort((a, b) => a.i - b.i)
+        .filter((r) => filter === 'all' || r.state === filter),
+    [rows, filter],
+  )
 
   // Re-render once a second while running so elapsed/ETA tick.
   const [, tick] = useState(0)
@@ -173,7 +217,7 @@ export default function App() {
       <main className="layout">
         <section className="panel config">
           <label className="label">
-            URLs <span className="muted">({urlCount})</span>
+            {discovery === 'list' ? 'URLs' : 'Seed URLs'} <span className="muted">({urlCount})</span>
           </label>
           <textarea
             className="urls"
@@ -182,6 +226,36 @@ export default function App() {
             spellCheck={false}
             placeholder="One URL per line. Lines starting with # are ignored."
           />
+
+          <label className="label">Discovery</label>
+          <div className="segmented">
+            {DISCOVERY.map((d) => (
+              <button key={d.id} className={discovery === d.id ? 'on' : ''} onClick={() => setDiscovery(d.id)}>
+                {d.label}
+              </button>
+            ))}
+          </div>
+          <p className="muted small">{DISCOVERY.find((d) => d.id === discovery).hint}</p>
+          {discovery !== 'list' && (
+            <>
+              <div className="grid2">
+                <div>
+                  <label className="label">Max pages</label>
+                  <input type="number" min="1" max="20000" value={maxPages} onChange={(e) => setMaxPages(e.target.value)} />
+                </div>
+                {discovery === 'links' && (
+                  <div>
+                    <label className="label">Max depth</label>
+                    <input type="number" min="0" max="20" value={maxDepth} onChange={(e) => setMaxDepth(e.target.value)} />
+                  </div>
+                )}
+              </div>
+              <label className="label row">
+                <input type="checkbox" checked={respectRobots} onChange={(e) => setRespectRobots(e.target.checked)} />
+                Respect robots.txt
+              </label>
+            </>
+          )}
 
           <label className="label">Fetcher</label>
           <div className="segmented">
@@ -253,7 +327,9 @@ export default function App() {
               </button>
             ) : (
               <button className="primary" onClick={start} disabled={!urlCount}>
-                Scrape {urlCount} URL{urlCount === 1 ? '' : 's'}
+                {discovery === 'list'
+                  ? `Scrape ${urlCount} URL${urlCount === 1 ? '' : 's'}`
+                  : `Crawl from ${urlCount} seed${urlCount === 1 ? '' : 's'}`}
               </button>
             )}
           </div>
@@ -267,7 +343,9 @@ export default function App() {
                     <button className={job?.id === h.id ? 'on' : ''} onClick={() => openJob(h.id)}>
                       <span className="mono">{h.id}</span>
                       <span className="muted">
-                        {h.mode} · {h.ok}/{h.total} · {h.status}
+                        {h.mode}
+                        {h.discovery_mode && h.discovery_mode !== 'list' ? `+${h.discovery_mode}` : ''} · {h.ok}/{h.total} ·{' '}
+                        {h.status}
                       </span>
                     </button>
                   </li>
@@ -294,9 +372,11 @@ export default function App() {
                 <Stat k="OK" v={job?.ok ?? '—'} />
                 <Stat k="Failed" v={job?.failed ?? '—'} />
                 <Stat k="In flight" v={job?.active ?? '—'} />
+                {job && job.discovery_mode !== 'list' && <Stat k="Queued" v={job.queued} />}
                 <Stat k="Rate" v={job ? `${rate.toFixed(1)}/s` : '—'} />
                 <Stat k={job?.finished ? 'Took' : 'ETA'} v={job ? fmtDur(job.finished ? elapsed : eta) : '—'} />
               </div>
+              {job && job.discovery_mode !== 'list' && <DiscoveryLine job={job} />}
               {job?.error && <p className="error">{job.error}</p>}
             </div>
             {job?.finished && (
@@ -320,7 +400,11 @@ export default function App() {
                   </button>
                 ))}
               </div>
-              <span className="muted small">{rowList.length} rows</span>
+              <span className="muted small">
+                {rowList.length > ROW_RENDER_LIMIT
+                  ? `showing ${ROW_RENDER_LIMIT} of ${rowList.length} rows (export for all)`
+                  : `${rowList.length} rows`}
+              </span>
             </div>
             {rowList.length === 0 ? (
               <div className="empty muted">
@@ -333,14 +417,15 @@ export default function App() {
                     <tr>
                       <th></th>
                       <th>URL</th>
+                      <th>Via</th>
                       <th>Status</th>
                       <th>Time</th>
                       <th>Title / error</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {rowList.map((r) => (
-                      <RowView key={r.i} r={r} mode={job?.mode} open={open === r.i} onToggle={() => setOpen(open === r.i ? null : r.i)} />
+                    {rowList.slice(0, ROW_RENDER_LIMIT).map((r) => (
+                      <RowView key={r.i} r={r} mode={job?.mode} open={open === r.i} onToggle={toggleRow} />
                     ))}
                   </tbody>
                 </table>
@@ -353,10 +438,10 @@ export default function App() {
   )
 }
 
-function RowView({ r, mode, open, onToggle }) {
+const RowView = memo(function RowView({ r, mode, open, onToggle }) {
   return (
     <>
-      <tr className={`r-${r.state}`} onClick={r.state !== 'active' ? onToggle : undefined}>
+      <tr className={`r-${r.state}`} onClick={r.state !== 'active' ? () => onToggle(r.i) : undefined}>
         <td className="icon">
           {r.state === 'active' ? (
             <ThinkingOrb state={RUNNING_ORB[mode] || 'working'} size={20} aria-label="Fetching" />
@@ -367,13 +452,14 @@ function RowView({ r, mode, open, onToggle }) {
         <td className="url mono" title={r.url}>
           {r.url}
         </td>
+        <td className="muted small">{r.via === 'link' ? `link · ${r.depth}` : r.via ?? ''}</td>
         <td className="mono">{r.status ?? (r.state === 'failed' ? 'ERR' : '…')}</td>
         <td className="mono muted">{r.ms != null ? `${r.ms}ms` : ''}</td>
         <td className="title">{r.error ? <span className="error-text">{r.error}</span> : r.data?.title ?? ''}</td>
       </tr>
       {open && (
         <tr className="detail">
-          <td colSpan={5}>
+          <td colSpan={6}>
             {r.final_url && r.final_url !== r.url && <div className="muted small">→ {r.final_url}</div>}
             <pre>{JSON.stringify(r.data ?? r, null, 2)}</pre>
           </td>
@@ -381,6 +467,19 @@ function RowView({ r, mode, open, onToggle }) {
       )}
     </>
   )
+})
+
+function DiscoveryLine({ job }) {
+  const d = job.discovery || {}
+  const plural = (n, word, suffix = 's') => `${n} ${word}${n === 1 ? '' : suffix}`
+  const parts = []
+  if (job.discovery_mode === 'sitemap') parts.push(`${plural(d.sitemaps, 'sitemap')} read`)
+  if (d.sitemap_errors) parts.push(plural(d.sitemap_errors, 'sitemap miss', 'es'))
+  parts.push(`${plural(job.total, 'URL')} found`)
+  if (d.robots_blocked) parts.push(`${d.robots_blocked} blocked by robots.txt`)
+  if (job.skipped) parts.push(`${job.skipped} skipped`)
+  if (d.capped) parts.push('max pages reached')
+  return <p className="muted small discovery-line">{parts.join(' · ')}</p>
 }
 
 function Stat({ k, v }) {

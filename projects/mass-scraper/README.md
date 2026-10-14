@@ -7,6 +7,11 @@ A localhost tool for scraping lots of URLs at once with [Scrapling](https://gith
   - **HTTP** uses `FetcherSession`. It's fast, uses curl_cffi with a Chrome TLS fingerprint, and does not run JavaScript.
   - **Browser** uses `AsyncDynamicSession`, which is headless Chromium and renders JavaScript.
   - **Stealth** uses `AsyncStealthySession`, a patched browser for protected sites.
+- Choose a discovery mode:
+  - **List only** scrapes exactly the URLs you paste.
+  - **Sitemap** treats the URLs as seeds. It reads each site's sitemaps (`Sitemap:` lines in robots.txt, falling back to `/sitemap.xml` and `/sitemap_index.xml`), follows nested sitemap indexes and `.gz` files, and scrapes every page URL on the same site. You can also paste a sitemap URL directly.
+  - **Internal links** crawls breadth-first from the seeds, following `<a href>` links that stay on the same site (`www.` and the bare domain count as one site), up to a max depth.
+  - Both crawl modes stop at **Max pages**, skip non-page files (images, PDFs, CSS/JS…), deduplicate URLs, and respect robots.txt by default (it can be switched off). Each row records how it was found (`seed`, `sitemap`, `link · depth`).
 - Set the concurrency (1–64) and a per-request timeout.
 - Extract fields with CSS (`.price::text`, `a::attr(href)`) or XPath (`//h1/text()`). Turn on "all" to collect every match.
 - Progress streams live over SSE. Each URL in flight shows a small orb, and the large orb shows the job's phase.
@@ -20,7 +25,7 @@ From PowerShell (in this folder):
 
 ```powershell
 ./setup.ps1        # first time: venv, browsers (~300 MB), frontend build
-./start.ps1        # http://127.0.0.1:8787
+./start.ps1        # http://127.0.0.1:8787  (set $env:PORT to change)
 ./start.ps1 -Dev   # API on 8787 + Vite hot reload on http://127.0.0.1:5173
 ```
 
@@ -30,6 +35,7 @@ From PowerShell (in this folder):
 | ----------------------------- | ------------ |
 | Idle                          | `breathing`  |
 | Opening session / browsers    | `connecting` |
+| Reading sitemaps              | `connecting` |
 | Running (HTTP)                | `searching`  |
 | Running (Browser)             | `working`    |
 | Running (Stealth)             | `weaving`    |
@@ -40,7 +46,7 @@ From PowerShell (in this folder):
 
 | Method | Path                               | Notes                                        |
 | ------ | ---------------------------------- | -------------------------------------------- |
-| POST   | `/api/jobs`                        | `{urls, mode, concurrency, timeout, fields, include_defaults}` |
+| POST   | `/api/jobs`                        | `{urls, mode, discovery, max_pages, max_depth, respect_robots, concurrency, timeout, fields, include_defaults}` |
 | GET    | `/api/jobs`                        | Job summaries                                |
 | GET    | `/api/jobs/{id}`                   | Summary + rows                               |
 | GET    | `/api/jobs/{id}/events`            | SSE stream (replays from start)              |
