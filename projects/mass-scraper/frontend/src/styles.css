@@ -158,3 +158,19 @@ tr.group td { border-bottom: 1px solid var(--border); padding-top: 8px; padding-
 .chevron { display: inline-block; font-size: 16px; line-height: 1; color: var(--muted); transition: transform 0.15s; }
 .chevron.open { transform: rotate(90deg); }
 .segmented button { white-space: nowrap; }
+
+.find { display: flex; flex-direction: column; gap: 8px; }
+.find { gap: 6px; }
+.find-group { border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; min-width: 0; }
+.find-group.open { padding-bottom: 8px; }
+.find-head { display: flex; align-items: center; gap: 8px; }
+.find-toggle { flex: 1; display: flex; align-items: center; gap: 8px; border: 0; background: none; padding: 2px 0; cursor: pointer; text-align: left; }
+.find-name { font-size: 12.5px; font-weight: 600; }
+.find-count { font-size: 11px; font-family: var(--mono); color: var(--muted); background: var(--soft); border-radius: 99px; padding: 1px 7px; }
+.find-count.on { color: var(--accent); }
+.find-picked { font-size: 11.5px; padding: 0 0 2px 22px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.find-item { display: grid; grid-template-columns: auto 1fr; column-gap: 8px; align-items: baseline; padding: 3px 0; cursor: pointer; font-size: 13px; }
+.find-item input { margin: 0; transform: translateY(1px); }
+.find-hint { grid-column: 2; font-size: 11.5px; line-height: 1.3; }
+.link-btn { border: 0; background: none; padding: 0; color: var(--accent); font-size: 11.5px; font-weight: 500; cursor: pointer; }
+.link-btn:hover { text-decoration: underline; }

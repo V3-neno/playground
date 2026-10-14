@@ -18,13 +18,16 @@ A localhost tool for scraping lots of URLs at once with [Scrapling](https://gith
   - **Max pages per site** (default 500, crawl modes only): each site gets its own budget of *discovered* pages. Seed URLs don't count toward it. Sitemaps for different sites are read in parallel, and within one site up to 8 sitemap files are fetched at once, so large sitemap indexes load quickly.
 - Set the concurrency (1–64) and a per-request timeout.
 - In the crawl modes, results are grouped **by seed**. Each seed URL is a collapsible section holding every page found from it (through its sitemap, or by following links from it), with a done/total count and a progress bar. Switch to **Flat** for one plain list. CSV/JSON exports include a `seed` column and are ordered seed by seed.
-- Default fields (on by default):
-  - `title`
-  - `description` (meta description)
-  - `h1`: full text of the first H1, including text inside nested tags like `<span>`
-  - `h1_count`
-  - `links`: the raw number of `<a href>` links on the page, counting internal, external, `mailto:` and `#` anchors, duplicates included
-- Extract fields with CSS (`.price::text`, `a::attr(href)`) or XPath (`//h1/text()`). Turn on "all" to collect every match.
+- **What to find**: pick the output fields in the sidebar. They're grouped and collapsible, and each group has an all/none toggle. The list comes from `backend/extractors.py` (`FIELD_GROUPS`), so a field added there shows up in the UI automatically.
+  - **Meta:** title (+ length), meta description (+ length), canonical (+ whether it points to itself), meta robots (noindex/nofollow), `<html lang>`, hreflang, Open Graph.
+  - **Headings:** H1 text (including nested `<span>`s) + count, H2 texts + count, H3–H6 counts.
+  - **Content:** visible word count, paragraphs.
+  - **Links:** all `<a href>`, internal (same registrable domain as the seed, so `blog.` and `www.` count as internal, as does a domain the seed redirects to), external (+ unique external domains), nofollow/sponsored/ugc, mailto/tel counts.
+  - **Images:** count (excluding `<noscript>` tracking pixels), with alt, missing alt, empty `alt=""`.
+  - **Tracking:** GTM container IDs, GA4 / UA / Google Ads IDs, Meta Pixel, TikTok, LinkedIn Insight, Hotjar, Microsoft Clarity. IDs are read from the page's `<script>` tags, so tags that GTM loads at runtime only show up in **Browser** mode.
+  - **Tech & structured data:** CMS/platform (WordPress, Shopify, Wix, Webflow…), schema.org JSON-LD `@type`s, HTML size.
+  - Defaults: title, description, H1, word count, internal/external links, images, alt texts.
+- **Custom selectors**: extract anything else with CSS (`.price::text`, `a::attr(href)`) or XPath (`//h1/text()`). Turn on "all" to collect every match.
 - Progress streams live over SSE. Each URL in flight shows a small orb, and the large orb shows the job's phase.
 - Export results as CSV or JSON. Every finished job is also saved to `data/<job-id>.json`.
 
@@ -57,7 +60,8 @@ From PowerShell (in this folder):
 
 | Method | Path                               | Notes                                        |
 | ------ | ---------------------------------- | -------------------------------------------- |
-| POST   | `/api/jobs`                        | `{urls, mode, discovery, max_seeds, max_pages_per_site, max_depth, respect_robots, concurrency, timeout, fields, include_defaults}` |
+| POST   | `/api/jobs`                        | `{urls, mode, discovery, max_seeds, max_pages_per_site, max_depth, respect_robots, concurrency, timeout, find, fields}` |
+| GET    | `/api/fields`                      | The "What to find" options                   |
 | GET    | `/api/jobs`                        | Job summaries                                |
 | GET    | `/api/jobs/{id}`                   | Summary + rows                               |
 | GET    | `/api/jobs/{id}/events`            | SSE stream (replays from start)              |
@@ -75,7 +79,8 @@ curl -X POST http://127.0.0.1:8787/api/jobs -H "Content-Type: application/json" 
 
 ```
 mass-scraper/
-├── backend/app.py        # FastAPI + Scrapling job runner
+├── backend/app.py        # FastAPI + Scrapling job runner / crawler
+├── backend/extractors.py # "What to find" fields
 ├── frontend/src/App.jsx  # React UI
 ├── data/                 # saved job results (git-ignored)
 ├── setup.ps1

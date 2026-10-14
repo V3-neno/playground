@@ -59,8 +59,9 @@ export default function App() {
   const [mode, setMode] = useState(saved.mode ?? 'http')
   const [concurrency, setConcurrency] = useState(saved.concurrency ?? 8)
   const [timeout, setTimeoutSec] = useState(saved.timeout ?? 30)
-  const [includeDefaults, setIncludeDefaults] = useState(saved.includeDefaults ?? true)
-  const [fields, setFields] = useState(saved.fields ?? [{ name: 'quotes', selector: '.quote .text::text', all: true }])
+  const [find, setFind] = useState(saved.find ?? null) // null until the field list loads (then server defaults)
+  const [fieldGroups, setFieldGroups] = useState([])
+  const [fields, setFields] = useState(saved.fields ?? [])
   const [discovery, setDiscovery] = useState(saved.discovery ?? 'list')
   const [maxSeeds, setMaxSeeds] = useState(saved.maxSeeds ?? 1000)
   const [maxPagesPerSite, setMaxPagesPerSite] = useState(saved.maxPagesPerSite ?? 500)
@@ -88,12 +89,12 @@ export default function App() {
       localStorage.setItem(
         'mass-scraper:form',
         JSON.stringify({
-          urlsText, mode, concurrency, timeout, includeDefaults, fields,
+          urlsText, mode, concurrency, timeout, find, fields,
           discovery, maxSeeds, maxPagesPerSite, maxDepth, respectRobots,
         }),
       )
     } catch {}
-  }, [urlsText, mode, concurrency, timeout, includeDefaults, fields, discovery, maxSeeds, maxPagesPerSite, maxDepth, respectRobots])
+  }, [urlsText, mode, concurrency, timeout, find, fields, discovery, maxSeeds, maxPagesPerSite, maxDepth, respectRobots])
 
   const refreshHistory = () =>
     fetch('/api/jobs')
@@ -103,6 +104,15 @@ export default function App() {
 
   useEffect(() => {
     refreshHistory()
+    fetch('/api/fields')
+      .then((r) => r.json())
+      .then((groups) => {
+        setFieldGroups(groups)
+        const known = new Set(groups.flatMap((g) => g.items.map((i) => i.id)))
+        const defaults = groups.flatMap((g) => g.items.filter((i) => i.default).map((i) => i.id))
+        setFind((prev) => (prev ? prev.filter((id) => known.has(id)) : defaults))
+      })
+      .catch(() => {})
     return () => esRef.current?.close()
   }, [])
 
@@ -147,7 +157,7 @@ export default function App() {
       mode,
       concurrency: Number(concurrency),
       timeout: Number(timeout),
-      include_defaults: includeDefaults,
+      ...(find ? { find } : {}),
       discovery,
       max_seeds: Number(maxSeeds),
       max_pages_per_site: Number(maxPagesPerSite),
@@ -161,7 +171,10 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
-      if (!res.ok) throw new Error((await res.json()).detail?.toString() || res.statusText)
+      if (!res.ok) {
+        const { detail } = await res.json()
+        throw new Error(Array.isArray(detail) ? detail.map((d) => d.msg).join('; ') : detail || res.statusText)
+      }
       const j = await res.json()
       setRows({})
       setSeedTotals({})
@@ -367,12 +380,9 @@ export default function App() {
             </div>
           </div>
 
-          <label className="label row">
-            <input type="checkbox" checked={includeDefaults} onChange={(e) => setIncludeDefaults(e.target.checked)} />
-            Extract title, description, h1 and link count
-          </label>
+          <WhatToFind groups={fieldGroups} find={find ?? []} setFind={setFind} />
 
-          <label className="label">Custom fields</label>
+          <label className="label">Custom selectors</label>
           <p className="muted small">
             CSS with <code>::text</code> / <code>::attr(href)</code>, or XPath starting with <code>/</code>.
           </p>
@@ -565,7 +575,9 @@ const RowView = memo(function RowView({ r, mode, open, onToggle }) {
         <td className="muted small">{r.via === 'link' ? `link · ${r.depth}` : r.via ?? ''}</td>
         <td className="mono">{r.status ?? (r.state === 'failed' ? 'ERR' : '…')}</td>
         <td className="mono muted">{r.ms != null ? `${r.ms}ms` : ''}</td>
-        <td className="title">{r.error ? <span className="error-text">{r.error}</span> : r.data?.title ?? ''}</td>
+        <td className="title">
+          {r.error ? <span className="error-text">{r.error}</span> : r.data?.title ?? r.data?.h1 ?? ''}
+        </td>
       </tr>
       {open && (
         <tr className="detail">
@@ -613,6 +625,65 @@ const GroupHeader = memo(function GroupHeader({ g, total, mode, expanded, onTogg
     </tr>
   )
 })
+
+function WhatToFind({ groups, find, setFind }) {
+  const selected = new Set(find)
+  const [openGroups, setOpenGroups] = useState(() => new Set())
+  const toggleOpen = (name) =>
+    setOpenGroups((prev) => {
+      const next = new Set(prev)
+      next.has(name) ? next.delete(name) : next.add(name)
+      return next
+    })
+  const toggle = (ids, on) =>
+    setFind((prev) => {
+      const next = new Set(prev ?? [])
+      ids.forEach((id) => (on ? next.add(id) : next.delete(id)))
+      return [...next]
+    })
+  if (!groups.length) return null
+  return (
+    <>
+      <label className="label">
+        What to find <span className="muted">({find.length} selected)</span>
+      </label>
+      <div className="find">
+        {groups.map((g) => {
+          const ids = g.items.map((i) => i.id)
+          const all = ids.every((id) => selected.has(id))
+          const count = ids.filter((id) => selected.has(id)).length
+          const isOpen = openGroups.has(g.group)
+          const picked = g.items.filter((i) => selected.has(i.id)).map((i) => i.label)
+          return (
+            <div key={g.group} className={`find-group ${isOpen ? 'open' : ''}`}>
+              <div className="find-head">
+                <button type="button" className="find-toggle" onClick={() => toggleOpen(g.group)} aria-expanded={isOpen}>
+                  <span className={`chevron ${isOpen ? 'open' : ''}`}>›</span>
+                  <span className="find-name">{g.group}</span>
+                  <span className={`find-count ${count ? 'on' : ''}`}>
+                    {count}/{ids.length}
+                  </span>
+                </button>
+                <button type="button" className="link-btn" onClick={() => toggle(ids, !all)}>
+                  {all ? 'none' : 'all'}
+                </button>
+              </div>
+              {!isOpen && picked.length > 0 && <div className="find-picked muted">{picked.join(', ')}</div>}
+              {isOpen &&
+                g.items.map((item) => (
+                <label key={item.id} className="find-item" title={item.hint}>
+                  <input type="checkbox" checked={selected.has(item.id)} onChange={(e) => toggle([item.id], e.target.checked)} />
+                  <span>{item.label}</span>
+                  <span className="muted find-hint">{item.hint}</span>
+                </label>
+              ))}
+            </div>
+          )
+        })}
+      </div>
+    </>
+  )
+}
 
 function DiscoveryLine({ job }) {
   const d = job.discovery || {}

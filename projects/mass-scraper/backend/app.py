@@ -21,6 +21,7 @@ import json
 import os
 import time
 import uuid
+from functools import lru_cache
 from contextlib import AsyncExitStack
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -33,7 +34,10 @@ from fastapi.responses import FileResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from lxml import etree
 from protego import Protego
-from pydantic import BaseModel, Field
+from tld import get_fld
+from pydantic import BaseModel, Field, field_validator
+
+from extractors import DEFAULT_FIND, FIELD_GROUPS, FIELD_IDS, clean, extract_fields
 
 ROOT = Path(__file__).resolve().parent
 DATA_DIR = ROOT.parent / "data"
@@ -69,12 +73,20 @@ class JobRequest(BaseModel):
     concurrency: int = Field(default=8, ge=1, le=64)
     timeout: int = Field(default=30, ge=1, le=180)  # seconds
     fields: list[FieldRule] = []
-    include_defaults: bool = True  # title, meta description, h1, link count
+    find: list[str] = Field(default_factory=lambda: list(DEFAULT_FIND))  # "What to find" field ids, see extractors.py
     discovery: Discovery = "list"
     max_seeds: int = Field(default=1000, ge=1, le=20000)  # hard cap on the pasted seed list
     max_pages_per_site: int = Field(default=500, ge=1, le=20000)  # discovered pages per site, seeds excluded
     max_depth: int = Field(default=3, ge=0, le=20)  # links mode only
     respect_robots: bool = True  # sitemap / links modes only
+
+    @field_validator("find")
+    @classmethod
+    def known_fields(cls, v: list[str]) -> list[str]:
+        unknown = set(v) - FIELD_IDS
+        if unknown:
+            raise ValueError(f"unknown fields: {sorted(unknown)}")
+        return v
 
 
 @dataclass
@@ -185,6 +197,12 @@ def site_of(url: str) -> str:
     return host[4:] if host.startswith("www.") else host
 
 
+@lru_cache(maxsize=50_000)
+def registrable_domain(host: str) -> str:
+    """svv.se for www.svv.se, example.co.uk for shop.example.co.uk; falls back to the host (localhost, IPs)."""
+    return get_fld("http://" + host, fail_silently=True) or host
+
+
 def origin_of(url: str) -> str:
     p = urlsplit(url)
     return f"{p.scheme}://{p.netloc}"
@@ -202,30 +220,15 @@ def is_page_like(url: str) -> bool:
 # ---------------------------------------------------------------- extraction
 
 
-def _clean(value: Any) -> Any:
-    if value is None:
-        return None
-    s = " ".join(str(value).split())  # collapse newlines/indentation from the HTML source
-    return s[:2000]
-
-
-def extract(page: Any, req: JobRequest) -> dict[str, Any]:
-    data: dict[str, Any] = {}
-    if req.include_defaults:
-        data["title"] = _clean(page.css("title::text").get())
-        data["description"] = _clean(page.css('meta[name="description"]::attr(content)').get())
-        h1s = page.css("h1")
-        # Full text including nested <span>/<b> etc., joined the way a browser renders it.
-        data["h1"] = _clean(h1s[0].get_all_text(separator="", valid_values=False)) if h1s else None
-        data["h1_count"] = len(h1s)
-        data["links"] = len(page.css("a::attr(href)").getall())
+def extract(page: Any, req: JobRequest, is_internal: Callable[[str], bool]) -> dict[str, Any]:
+    data = extract_fields(page, req.find, is_internal)
     for rule in req.fields:
         sel = rule.selector.strip()
         found = page.xpath(sel) if sel.startswith(("/", "(")) else page.css(sel)
         if rule.all:
-            data[rule.name] = [_clean(v) for v in found.getall()]
+            data[rule.name] = [clean(v) for v in found.getall()]
         else:
-            data[rule.name] = _clean(found.get())
+            data[rule.name] = clean(found.get())
     return data
 
 
@@ -349,6 +352,13 @@ class Crawler:
             self.alias[final] = site
             self.sites.add(final)
 
+    def internal_matcher(self, seed: str) -> Callable[[str], bool]:
+        """For link counts: a link is internal if it's on the seed's domain (any subdomain) or a domain it redirected to."""
+        site = self.budget_site(seed)
+        hosts = {site, *(a for a, s in self.alias.items() if s == site)}
+        domains = {registrable_domain(h) for h in hosts}
+        return lambda url: registrable_domain(urlsplit(url).hostname or "") in domains
+
     def site_full(self, site: str) -> bool:
         if self.job.site_counts.get(site, 0) < self.req.max_pages_per_site:
             return False
@@ -374,13 +384,18 @@ class Crawler:
         page = None
         try:
             page = await self.fetch(url)
+            if base["via"] == "seed":  # before extracting, so links on a redirected seed count as internal
+                self.register_alias(str(page.url), site_of(url))
             row = {
                 **base,
                 "final_url": str(page.url),
                 "state": "ok" if page.status < 400 else "failed",
                 "status": page.status,
-                "data": extract(page, self.req),
             }
+            try:
+                row["data"] = extract(page, self.req, self.internal_matcher(seed))
+            except Exception as e:  # a parsing problem shouldn't turn a fetched page into a failure
+                row["data"] = {"extract_error": f"{type(e).__name__}: {e}"[:300]}
         except Exception as e:  # one bad URL must not sink the batch
             row = {**base, "state": "failed", "error": f"{type(e).__name__}: {e}"[:500]}
         row["ms"] = round((time.perf_counter() - t0) * 1000)
@@ -391,8 +406,6 @@ class Crawler:
             final = canonical(str(page.url))
             if final:
                 job.seen.add(final)  # don't re-scrape a redirect target under its own URL
-                if base["via"] == "seed":
-                    self.register_alias(final, site_of(url))
             if self.req.discovery == "links" and depth < self.req.max_depth:
                 await self.follow_links(page, depth, seed)
 
@@ -583,6 +596,11 @@ async def create_job(req: JobRequest):
     JOBS[job.id] = job
     job.task = asyncio.create_task(run_job(job))
     return job.summary()
+
+
+@app.get("/api/fields")
+async def fields():
+    return FIELD_GROUPS
 
 
 @app.get("/api/jobs")
