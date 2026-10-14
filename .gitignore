@@ -1,0 +1,17 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+dist/
+
+# Project output
+projects/*/data/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
