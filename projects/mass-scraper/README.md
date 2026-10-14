@@ -14,6 +14,10 @@ A localhost tool for scraping lots of URLs at once with [Scrapling](https://gith
 
 ## Run
 
+**Easiest:** double-click `start.cmd`. It starts the server and opens http://127.0.0.1:8787. Close the window to stop it.
+
+From PowerShell (in this folder):
+
 ```powershell
 ./setup.ps1        # first time: venv, browsers (~300 MB), frontend build
 ./start.ps1        # http://127.0.0.1:8787
