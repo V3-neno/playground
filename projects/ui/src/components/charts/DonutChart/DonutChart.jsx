@@ -66,8 +66,9 @@ export function DonutChart({
   const hot = active != null ? data[active] : null
   const svgH = half ? r1 + 16 : s
 
-  // Largest font (px) that keeps the centre text inside the hole (≈0.7em per character, 1.5·r0 wide).
-  const fit = (text) => Math.round(Math.max(11, Math.min(30, (r0 * 1.5) / (0.7 * Math.max(3, String(text).length)))))
+  // Largest font (px) that keeps the centre text inside the hole (1.5·r0 wide). Display/mono faces run wider per character.
+  const charW = { extra: 0.92, mono: 0.66, brutalist: 0.72 }[paint.style] ?? 0.62
+  const fit = (text) => Math.round(Math.max(11, Math.min(30, (r0 * 1.5) / (charW * Math.max(3, String(text).length)))))
 
   const enter = (i, e) => {
     setActive(i)
