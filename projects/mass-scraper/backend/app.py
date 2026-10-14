@@ -84,6 +84,7 @@ class Job:
     urls: list[str] = field(default_factory=list)  # every URL queued for scraping, index = row id
     seen: set[str] = field(default_factory=set)
     site_counts: dict[str, int] = field(default_factory=dict)  # discovered (non-seed) URLs per site
+    seed_totals: dict[str, int] = field(default_factory=dict)  # URLs queued under each seed, the seed included
     status: str = "queued"  # queued | starting | running | done | cancelled | error
     created: float = field(default_factory=time.time)
     finished: float | None = None
@@ -131,6 +132,8 @@ class Job:
         }
 
     async def emit(self, kind: str, **payload: Any) -> None:
+        if kind != "row":  # rows are frequent; per-seed totals ride on the throttled events only
+            payload["seed_totals"] = dict(self.seed_totals)
         async with self.cond:
             self.events.append({"type": kind, "job": self.summary(), **payload})
             self.cond.notify_all()
@@ -201,7 +204,7 @@ def is_page_like(url: str) -> bool:
 def _clean(value: Any) -> Any:
     if value is None:
         return None
-    s = str(value).strip()
+    s = " ".join(str(value).split())  # collapse newlines/indentation from the HTML source
     return s[:2000]
 
 
@@ -279,7 +282,7 @@ class Crawler:
         self.req = job.req
         self.fetch = fetch  # page fetcher for the chosen mode
         self.http = http  # always plain HTTP; used for robots.txt and sitemaps
-        self.queue: asyncio.Queue[tuple[int, str, int]] = asyncio.Queue()
+        self.queue: asyncio.Queue[tuple[int, str, int, str]] = asyncio.Queue()  # (row, url, depth, seed)
         self.sites = {site_of(u) for u in job.seeds}  # every host we may crawl, including redirect aliases
         self.alias: dict[str, str] = {}  # redirected-to host -> the seed site whose budget it shares
         self._robots: dict[str, asyncio.Future] = {}
@@ -290,7 +293,7 @@ class Crawler:
             if self.req.discovery == "sitemap" and looks_like_sitemap(url):
                 sitemap_seeds.append(url)
             else:
-                await self.add(url, depth=0, via="seed")
+                await self.add(url, depth=0, via="seed", seed=url)
 
         workers = [asyncio.create_task(self.worker()) for _ in range(self.req.concurrency)]
         try:
@@ -304,7 +307,8 @@ class Crawler:
                 f.cancel()
             await asyncio.gather(*workers, return_exceptions=True)
 
-    async def add(self, url: str, depth: int, via: str) -> bool:
+    async def add(self, url: str, depth: int, via: str, seed: str) -> bool:
+        """Queue a URL for scraping. `seed` is the pasted URL it was discovered from (rows are grouped by it)."""
         job = self.job
         url = canonical(url)
         if not url or url in job.seen:
@@ -322,8 +326,9 @@ class Crawler:
             job.site_counts[site] = job.site_counts.get(site, 0) + 1
         i = len(job.urls)
         job.urls.append(url)
-        job.results[i] = {"i": i, "url": url, "state": "queued", "via": via, "depth": depth}
-        self.queue.put_nowait((i, url, depth))
+        job.results[i] = {"i": i, "url": url, "seed": seed, "state": "queued", "via": via, "depth": depth}
+        job.seed_totals[seed] = job.seed_totals.get(seed, 0) + 1
+        self.queue.put_nowait((i, url, depth, seed))
         await job.tick()
         return True
 
@@ -348,15 +353,15 @@ class Crawler:
 
     async def worker(self) -> None:
         while True:
-            i, url, depth = await self.queue.get()
+            i, url, depth, seed = await self.queue.get()
             try:
-                await self.scrape(i, url, depth)
+                await self.scrape(i, url, depth, seed)
             finally:
                 self.queue.task_done()
 
-    async def scrape(self, i: int, url: str, depth: int) -> None:
+    async def scrape(self, i: int, url: str, depth: int, seed: str) -> None:
         job = self.job
-        base = {k: job.results[i][k] for k in ("i", "url", "via", "depth")}
+        base = {k: job.results[i][k] for k in ("i", "url", "seed", "via", "depth")}
         job.results[i] = {**base, "state": "active"}
         await job.emit("row", row=job.results[i])
         t0 = time.perf_counter()
@@ -383,9 +388,9 @@ class Crawler:
                 if base["via"] == "seed":
                     self.register_alias(final, site_of(url))
             if self.req.discovery == "links" and depth < self.req.max_depth:
-                await self.follow_links(page, depth)
+                await self.follow_links(page, depth, seed)
 
-    async def follow_links(self, page: Any, depth: int) -> None:
+    async def follow_links(self, page: Any, depth: int, seed: str) -> None:
         try:
             hrefs = page.css("a::attr(href)").getall()
         except Exception:
@@ -396,7 +401,7 @@ class Crawler:
                 continue
             url = canonical(page.urljoin(href))
             if url and site_of(url) in self.sites and is_page_like(url):
-                await self.add(url, depth=depth + 1, via="link")
+                await self.add(url, depth=depth + 1, via="link", seed=seed)
 
     # -- robots.txt
 
@@ -434,15 +439,18 @@ class Crawler:
                 if origin_of(url) not in origins:
                     origins.append(origin_of(url))
 
+        first_seed: dict[str, str] = {}
+        for url in self.job.seeds:
+            first_seed.setdefault(site_of(url), url)
         sem = asyncio.Semaphore(self.req.concurrency)
 
         async def one(site: str, sitemaps: list[str], origins: list[str]) -> None:
             async with sem:
-                await self.site_sitemaps(site, sitemaps, origins)
+                await self.site_sitemaps(site, first_seed[site], sitemaps, origins)
 
         await asyncio.gather(*(one(site, sm, og) for site, (sm, og) in groups.items()))
 
-    async def site_sitemaps(self, site: str, explicit: list[str], origins: list[str]) -> None:
+    async def site_sitemaps(self, site: str, seed: str, explicit: list[str], origins: list[str]) -> None:
         job = self.job
         pending: list[str] = list(explicit)
         # robots.txt Sitemap: lines first, then the conventional locations.
@@ -471,7 +479,7 @@ class Crawler:
             pending += [c for c in children if c not in visited]
             for url in pages:
                 if site_of(url) in self.sites and is_page_like(url):
-                    await self.add(url, depth=0, via="sitemap")
+                    await self.add(url, depth=0, via="sitemap", seed=seed)
                 if self.site_full(site):
                     break
             await job.tick()
@@ -509,6 +517,12 @@ async def run_job(job: Job) -> None:
 
 def rows(job: Job) -> list[dict[str, Any]]:
     return [job.results[i] for i in sorted(job.results)]
+
+
+def rows_by_seed(job: Job) -> list[dict[str, Any]]:
+    """Rows ordered seed by seed (in pasted order), each seed's pages in discovery order."""
+    order = {seed: n for n, seed in enumerate(job.seeds)}
+    return sorted(rows(job), key=lambda r: (order.get(r.get("seed"), len(order)), r["i"]))
 
 
 # ---------------------------------------------------------------- API
@@ -551,7 +565,7 @@ async def list_jobs():
 @app.get("/api/jobs/{job_id}")
 async def job_detail(job_id: str):
     job = get_job(job_id)
-    return {"job": job.summary(), "seeds": job.seeds, "rows": rows(job)}
+    return {"job": job.summary(), "seeds": job.seeds, "seed_totals": job.seed_totals, "rows": rows(job)}
 
 
 @app.post("/api/jobs/{job_id}/cancel")
@@ -589,7 +603,7 @@ async def job_events(job_id: str):
 @app.get("/api/jobs/{job_id}/export")
 async def export_job(job_id: str, format: Literal["json", "csv"] = "json"):
     job = get_job(job_id)
-    data = rows(job)
+    data = rows_by_seed(job)
     if format == "json":
         body = json.dumps(data, indent=2, ensure_ascii=False)
         media = "application/json"
@@ -601,11 +615,11 @@ async def export_job(job_id: str, format: Literal["json", "csv"] = "json"):
                     keys.append(k)
         buf = io.StringIO()
         w = csv.writer(buf)
-        w.writerow(["url", "final_url", "via", "depth", "state", "status", "ms", "error", *keys])
+        w.writerow(["seed", "url", "final_url", "via", "depth", "state", "status", "ms", "error", *keys])
         for r in data:
             d = r.get("data", {})
             w.writerow([
-                r["url"], r.get("final_url", ""), r.get("via", ""), r.get("depth", ""), r["state"],
+                r.get("seed", ""), r["url"], r.get("final_url", ""), r.get("via", ""), r.get("depth", ""), r["state"],
                 r.get("status", ""), r.get("ms", ""), r.get("error", ""),
                 *(" | ".join(map(str, v)) if isinstance(v, list) else ("" if v is None else v) for v in (d.get(k) for k in keys)),
             ])  # fmt: skip

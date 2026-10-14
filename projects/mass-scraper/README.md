@@ -17,6 +17,7 @@ A localhost tool for scraping lots of URLs at once with [Scrapling](https://gith
   - **Seed URL limit** (default 1,000): a hard cap on how many of the pasted URLs are used. Anything beyond it is ignored, and the UI says so.
   - **Max pages per site** (default 500, crawl modes only): each site gets its own budget of *discovered* pages. Seed URLs don't count toward it. Sitemaps for different sites are read in parallel, so one large site can't use up another site's budget.
 - Set the concurrency (1–64) and a per-request timeout.
+- In the crawl modes, results are grouped **by seed**. Each seed URL is a collapsible section holding every page found from it (through its sitemap, or by following links from it), with a done/total count and a progress bar. Switch to **Flat** for one plain list. CSV/JSON exports include a `seed` column and are ordered seed by seed.
 - Extract fields with CSS (`.price::text`, `a::attr(href)`) or XPath (`//h1/text()`). Turn on "all" to collect every match.
 - Progress streams live over SSE. Each URL in flight shows a small orb, and the large orb shows the job's phase.
 - Export results as CSV or JSON. Every finished job is also saved to `data/<job-id>.json`.

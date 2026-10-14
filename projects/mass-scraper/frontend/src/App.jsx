@@ -73,6 +73,9 @@ export default function App() {
   const [error, setError] = useState('')
   const [filter, setFilter] = useState('all')
   const [open, setOpen] = useState(null)
+  const [seedTotals, setSeedTotals] = useState({})
+  const [grouped, setGrouped] = useState(true)
+  const [expanded, setExpanded] = useState(() => new Set())
   const esRef = useRef(null)
 
   const urlCount = useMemo(
@@ -104,13 +107,14 @@ export default function App() {
   }, [])
 
   // SSE events are buffered and applied once per animation frame, so big crawls stay smooth.
-  const pending = useRef({ job: null, rows: {} })
+  const pending = useRef({ job: null, rows: {}, seedTotals: null })
   const frame = useRef(0)
   function flush() {
     frame.current = 0
-    const { job: j, rows: r } = pending.current
-    pending.current = { job: null, rows: {} }
+    const { job: j, rows: r, seedTotals: st } = pending.current
+    pending.current = { job: null, rows: {}, seedTotals: null }
     if (Object.keys(r).length) setRows((prev) => ({ ...prev, ...r }))
+    if (st) setSeedTotals(st)
     if (j) {
       setJob(j)
       setHistory((h) => h.map((x) => (x.id === j.id ? j : x)))
@@ -125,6 +129,7 @@ export default function App() {
       const ev = JSON.parse(e.data)
       pending.current.job = ev.job
       if (ev.type === 'row') pending.current.rows[ev.row.i] = ev.row
+      if (ev.seed_totals) pending.current.seedTotals = ev.seed_totals
       if (!frame.current) frame.current = requestAnimationFrame(flush)
       if (ev.job.finished) {
         es.close()
@@ -159,6 +164,8 @@ export default function App() {
       if (!res.ok) throw new Error((await res.json()).detail?.toString() || res.statusText)
       const j = await res.json()
       setRows({})
+      setSeedTotals({})
+      setExpanded(new Set())
       setOpen(null)
       setJob(j)
       subscribe(j.id)
@@ -173,6 +180,8 @@ export default function App() {
     const d = await res.json()
     setJob(d.job)
     setRows(Object.fromEntries(d.rows.filter((r) => r.state !== 'queued').map((r) => [r.i, r])))
+    setSeedTotals(d.seed_totals || {})
+    setExpanded(new Set())
     setOpen(null)
     if (!d.job.finished) subscribe(id)
   }
@@ -198,6 +207,36 @@ export default function App() {
     [rows, filter],
   )
 
+  const isCrawl = job && job.discovery_mode !== 'list'
+  const showGroups = isCrawl && grouped
+
+  // Rows bucketed under the seed URL they were discovered from, in seed order.
+  const groups = useMemo(() => {
+    if (!showGroups) return []
+    const stats = new Map()
+    for (const r of Object.values(rows)) {
+      const key = r.seed ?? r.url
+      const g = stats.get(key) ?? { seed: key, first: r.i, ok: 0, failed: 0, active: 0, rows: [] }
+      g.first = Math.min(g.first, r.i)
+      if (r.state === 'ok' || r.state === 'failed' || r.state === 'active') g[r.state]++
+      stats.set(key, g)
+    }
+    for (const r of rowList) stats.get(r.seed ?? r.url).rows.push(r)
+    return [...stats.values()].filter((g) => filter === 'all' || g.rows.length).sort((a, b) => a.first - b.first)
+  }, [showGroups, rows, rowList, filter])
+
+  const isExpanded = (seed) => groups.length === 1 || expanded.has(seed)
+  const toggleGroup = useCallback(
+    (seed) =>
+      setExpanded((prev) => {
+        const next = new Set(prev)
+        next.has(seed) ? next.delete(seed) : next.add(seed)
+        return next
+      }),
+    [],
+  )
+  const allExpanded = groups.length > 0 && groups.every((g) => isExpanded(g.seed))
+
   // Re-render once a second while running so elapsed/ETA tick.
   const [, tick] = useState(0)
   useEffect(() => {
@@ -205,6 +244,27 @@ export default function App() {
     const t = setInterval(() => tick((n) => n + 1), 1000)
     return () => clearInterval(t)
   }, [running])
+
+  function renderGroups() {
+    let budget = ROW_RENDER_LIMIT
+    return groups.map((g) => {
+      const exp = isExpanded(g.seed)
+      const shown = exp ? g.rows.slice(0, Math.max(0, budget)) : []
+      budget -= shown.length
+      return [
+        <GroupHeader
+          key={`g:${g.seed}`}
+          g={g}
+          total={seedTotals[g.seed]}
+          mode={job?.mode}
+          expanded={exp}
+          onToggle={toggleGroup}
+          hidden={exp ? g.rows.length - shown.length : 0}
+        />,
+        ...shown.map((r) => <RowView key={r.i} r={r} mode={job?.mode} open={open === r.i} onToggle={toggleRow} />),
+      ]
+    })
+  }
 
   return (
     <div className="app">
@@ -427,7 +487,28 @@ export default function App() {
                   </button>
                 ))}
               </div>
+              {isCrawl && (
+                <div className="table-tools">
+                  <div className="segmented small">
+                    <button className={grouped ? 'on' : ''} onClick={() => setGrouped(true)}>
+                      By seed
+                    </button>
+                    <button className={grouped ? '' : 'on'} onClick={() => setGrouped(false)}>
+                      Flat
+                    </button>
+                  </div>
+                  {showGroups && groups.length > 1 && (
+                    <button
+                      className="ghost small-btn"
+                      onClick={() => setExpanded(allExpanded ? new Set() : new Set(groups.map((g) => g.seed)))}
+                    >
+                      {allExpanded ? 'Collapse all' : 'Expand all'}
+                    </button>
+                  )}
+                </div>
+              )}
               <span className="muted small">
+                {showGroups && `${groups.length} seed${groups.length === 1 ? '' : 's'} · `}
                 {rowList.length > ROW_RENDER_LIMIT
                   ? `showing ${ROW_RENDER_LIMIT} of ${rowList.length} rows (export for all)`
                   : `${rowList.length} rows`}
@@ -451,9 +532,11 @@ export default function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {rowList.slice(0, ROW_RENDER_LIMIT).map((r) => (
-                      <RowView key={r.i} r={r} mode={job?.mode} open={open === r.i} onToggle={toggleRow} />
-                    ))}
+                    {showGroups
+                      ? renderGroups()
+                      : rowList
+                          .slice(0, ROW_RENDER_LIMIT)
+                          .map((r) => <RowView key={r.i} r={r} mode={job?.mode} open={open === r.i} onToggle={toggleRow} />)}
                   </tbody>
                 </table>
               </div>
@@ -493,6 +576,41 @@ const RowView = memo(function RowView({ r, mode, open, onToggle }) {
         </tr>
       )}
     </>
+  )
+})
+
+const GroupHeader = memo(function GroupHeader({ g, total, mode, expanded, onToggle, hidden }) {
+  const done = g.ok + g.failed
+  const known = Math.max(total ?? 0, done + g.active)
+  return (
+    <tr className="group" onClick={() => onToggle(g.seed)} aria-expanded={expanded}>
+      <td className="icon">
+        {g.active > 0 ? (
+          <ThinkingOrb state={RUNNING_ORB[mode] || 'working'} size={20} aria-label="Crawling" />
+        ) : (
+          <span className={`chevron ${expanded ? 'open' : ''}`}>›</span>
+        )}
+      </td>
+      <td colSpan={5}>
+        <div className="group-row">
+          <span className="mono group-seed" title={g.seed}>
+            {g.seed}
+          </span>
+          <span className="group-stats small">
+            <span className="mono">
+              {done}/{known}
+            </span>{' '}
+            <span className="muted">pages</span>
+            {g.failed > 0 && <span className="error-text"> · {g.failed} failed</span>}
+            {hidden > 0 && <span className="muted"> · {hidden} not shown</span>}
+          </span>
+          <span className="group-bar">
+            <span className="bar-ok" style={{ width: `${known ? (g.ok / known) * 100 : 0}%` }} />
+            <span className="bar-fail" style={{ width: `${known ? (g.failed / known) * 100 : 0}%` }} />
+          </span>
+        </div>
+      </td>
+    </tr>
   )
 })
 
