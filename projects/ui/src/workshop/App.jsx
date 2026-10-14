@@ -194,7 +194,7 @@ function Overview({ settings }) {
                 <div key={id} className="ws-card" data-planned={!item.component || undefined} onClick={() => (location.hash = `#/${id}`)}>
                   <div className="ws-card-preview">
                     {first ? (
-                      <Thumb story={first} args={defaultArgs(item.component.controls)} settings={thumbSettings} />
+                      <Thumb story={first} args={defaultArgs(item.component.controls)} settings={thumbSettings} crop={g.category === 'Sections'} />
                     ) : (
                       <span className="ws-muted">planned</span>
                     )}

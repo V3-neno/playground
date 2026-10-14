@@ -1,4 +1,5 @@
-.ui-heatmap__plot { display: flex; justify-content: center; }
+/* Wide grids (e.g. a 30-week calendar) scroll sideways on narrow screens instead of overflowing. */
+.ui-heatmap__plot { display: flex; justify-content: safe center; overflow-x: auto; }
 .ui-heatmap__plot > svg { flex: none; }
 .ui-heatmap__cell {
   transform-box: fill-box;

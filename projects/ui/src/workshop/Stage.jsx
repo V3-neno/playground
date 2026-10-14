@@ -26,7 +26,7 @@ export function Stage({ story, args, settings, replayKey = 0, thumbnail = false,
         data-style={base}
         data-theme={settings.theme}
         data-motion={settings.reducedMotion ? 'reduce' : undefined}
-        style={{ ...vars, ...(thumbnail ? null : { maxWidth: width ?? undefined, minHeight: story.height }), ...style }}
+        style={{ ...vars, ...(thumbnail ? { minHeight: story.height } : { maxWidth: width ?? undefined, minHeight: story.height }), ...style }}
       >
         <UIContext.Provider value={ctx}>
           <StoryBoundary key={replayKey}>
