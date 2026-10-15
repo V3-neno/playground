@@ -103,7 +103,8 @@ export const TEMPLATES = [
       row([s('inputs/switch', 'Settings'), s('inputs/checkbox', 'SelectAll'), s('inputs/radio-group', 'Cards')], { columns: 3 }),
       row([s('inputs/slider', 'PriceRange'), s('inputs/file-upload', 'Playground')]),
       s('feedback/alert', 'Tones'),
-      row([s('overlays/modal', 'Preview'), s('overlays/drawer', 'Preview'), s('overlays/toast', 'Preview'), s('overlays/command-palette', 'Preview')], { columns: 4, layout: { align: 'center' } }),
+      // Overlays use their real (button-triggered) examples; the static "Preview" ones are always open.
+      row([s('overlays/modal', 'Playground'), s('overlays/drawer', 'Playground'), s('overlays/toast', 'Playground'), s('overlays/command-palette', 'Playground')], { columns: 4, layout: { align: 'center' } }),
       row([s('data-display/card', 'InteractiveGrid')], { columns: 1 }),
       s('media/carousel', 'Autoplay'),
       row([s('data-display/accordion', 'Overview'), s('feedback/empty-state', 'Compact')]),

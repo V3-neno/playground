@@ -29,7 +29,11 @@ textarea.ws-input { resize: vertical; font-family: ui-monospace, Consolas, monos
 .ws-link { border: 0; background: none; padding: 0; color: var(--ws-accent); font: inherit; font-size: 11.5px; cursor: pointer; }
 .ws-grow { flex: 1; }
 .ws-canvas { background: var(--ws-checker); }
-.ws-page-root { margin: 0 auto; min-height: 100%; transform: translateZ(0); transition: max-width 0.25s ease; }
+.ws-page-root { margin: 0 auto; min-height: 100%; transition: max-width 0.25s ease; }
+/* The transform makes this non-scrolling frame the containing block for position: fixed, so a page's modals,
+   drawers and toasts open over the visible canvas, not the whole browser window or the full page height. */
+.ws-canvas-frame { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; transform: translateZ(0); }
+.ws-canvas-frame > .ws-content { flex: 1; min-height: 0; }
 .ws-page-empty { padding: 80px 24px; text-align: center; color: var(--ui-text-muted); }
 
 /* Theme studio: token editor | live page */

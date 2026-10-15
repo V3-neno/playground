@@ -198,8 +198,10 @@ export function Builder({ pageId, settings, setSettings }) {
             <span>Preview</span>
           </label>
         </Toolbar>
-        <div className="ws-content ws-canvas" onPointerDown={(e) => e.target === e.currentTarget && setSelected(null)}>
-          <PageView page={page} settings={settings} width={width} editable={!preview} selected={selected} onSelect={setSelected} />
+        <div className="ws-canvas-frame">
+          <div className="ws-content ws-canvas" onPointerDown={(e) => e.target === e.currentTarget && setSelected(null)}>
+            <PageView page={page} settings={settings} width={width} editable={!preview} selected={selected} onSelect={setSelected} />
+          </div>
         </div>
       </main>
 

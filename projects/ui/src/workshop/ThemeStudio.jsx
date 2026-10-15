@@ -151,8 +151,10 @@ export function ThemeStudio({ settings, setSettings }) {
         <Toolbar settings={settings} setSettings={setSettings} mode="studio">
           <Seg label="Preview" value={preview} onChange={setPreview} options={TEMPLATES.map((t) => [t.id, t.name])} />
         </Toolbar>
-        <div className="ws-content ws-canvas">
-          <PageView key={preview} page={page} settings={settings} width={width} />
+        <div className="ws-canvas-frame">
+          <div className="ws-content ws-canvas">
+            <PageView key={preview} page={page} settings={settings} width={width} />
+          </div>
         </div>
       </main>
     </div>
